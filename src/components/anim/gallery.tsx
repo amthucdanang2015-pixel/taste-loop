@@ -178,7 +178,7 @@ function ProximityOrbitDemo({ app }: { app: AppGalleryItem }) {
         onMouseLeave={handleMouseLeave}
         className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden select-none p-2"
       >
-        <AppBadge app={app} isDetail={isDetail} />
+        {/* <AppBadge app={app} isDetail={isDetail} /> */}
 
         {/* Orbital ring track */}
         <div
@@ -187,7 +187,7 @@ function ProximityOrbitDemo({ app }: { app: AppGalleryItem }) {
         />
 
         {/* Center hub with app icon */}
-        <div
+        {/* <div
           className={`absolute flex flex-col items-center justify-center gap-1 rounded-full border border-purple-500/40 bg-purple-950/60 ${isDetail ? "p-4 shadow-[0_0_40px_rgba(168,85,247,0.5)]" : "p-2 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
             } backdrop-blur-md z-10`}
         >
@@ -195,7 +195,7 @@ function ProximityOrbitDemo({ app }: { app: AppGalleryItem }) {
           <span className={`${isDetail ? "text-xs font-bold" : "text-[8px] font-bold"} text-purple-200`}>
             {totalShots} Imgs
           </span>
-        </div>
+        </div> */}
 
         {/* Orbiting nodes for ALL screenshots in VocabTunes */}
         {shots.map((shot, idx) => {
@@ -315,7 +315,7 @@ function MagneticCarouselDemo({ app }: { app: AppGalleryItem }) {
   return (
     <Center className="h-full w-full">
       <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden p-2">
-        <AppBadge app={app} isDetail={isDetail} />
+        {/* <AppBadge app={app} isDetail={isDetail} /> */}
 
         {/* Dock track with all screenshots */}
         <div
@@ -482,7 +482,7 @@ function RingGalleryDemo({ app }: { app: AppGalleryItem }) {
         onPointerLeave={handlePointerUp}
         className="relative flex h-full w-full cursor-grab flex-col items-center justify-center overflow-hidden select-none active:cursor-grabbing p-2"
       >
-        <AppBadge app={app} isDetail={isDetail} />
+        {/* <AppBadge app={app} isDetail={isDetail} /> */}
 
         <p className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"} font-medium text-white/40 z-20`}>
           Drag to spin 3D ring · Flings with physics momentum
@@ -603,7 +603,7 @@ function RoundCarouselDemo({ app }: { app: AppGalleryItem }) {
         onPointerLeave={handlePointerUp}
         className="relative flex h-full w-full cursor-grab flex-col items-center justify-center overflow-hidden select-none active:cursor-grabbing p-2"
       >
-        <AppBadge app={app} isDetail={isDetail} />
+        {/* <AppBadge app={app} isDetail={isDetail} /> */}
 
         <p className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"} font-medium text-white/40 z-20`}>
           Click card to flip 3D · Drag cylinder to spin
