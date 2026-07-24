@@ -1,0 +1,316 @@
+{
+  "version": 2,
+  "sites": {
+    "agentcto": "shipped/sites/agentcto.svg",
+    "baecafe": "shipped/sites/baecafe.png",
+    "moreso": "shipped/sites/moreso.png",
+    "opencto": "shipped/sites/opencto.svg",
+    "groupumpfun": "shipped/sites/groupump.svg"
+  },
+  "apps": {
+    "6473722198": {
+      "icon": "shipped/apps/6473722198/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6473722198/01.webp",
+          "alt": "VocabTunes Explore view for discovering new words"
+        },
+        {
+          "path": "shipped/apps/6473722198/02.webp",
+          "alt": "VocabTunes hands-free word listening view"
+        },
+        {
+          "path": "shipped/apps/6473722198/03.webp",
+          "alt": "VocabTunes AI insight for the word football"
+        },
+        {
+          "path": "shipped/apps/6473722198/04.webp",
+          "alt": "VocabTunes sound controls for learning with music"
+        },
+        {
+          "path": "shipped/apps/6473722198/05.webp",
+          "alt": "VocabTunes background theme picker"
+        },
+        {
+          "path": "shipped/apps/6473722198/06.webp",
+          "alt": "VocabTunes topic-based focus area picker"
+        },
+        {
+          "path": "shipped/apps/6473722198/07.webp",
+          "alt": "VocabTunes review grid for fast word recall"
+        }
+      ]
+    },
+    "6483942011": {
+      "icon": "shipped/apps/6483942011/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6483942011/01.webp",
+          "alt": "King English Kids Anime fruit vocabulary lesson"
+        },
+        {
+          "path": "shipped/apps/6483942011/02.webp",
+          "alt": "King English Kids Anime AI learning video"
+        },
+        {
+          "path": "shipped/apps/6483942011/03.webp",
+          "alt": "King English Kids Anime favorites review grid"
+        }
+      ]
+    },
+    "6757947194": {
+      "icon": "shipped/apps/6757947194/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6757947194/01.webp",
+          "alt": "Buzzed party-game player setup"
+        },
+        {
+          "path": "shipped/apps/6757947194/02.webp",
+          "alt": "Buzzed do-it-or-drink game card"
+        },
+        {
+          "path": "shipped/apps/6757947194/03.webp",
+          "alt": "Buzzed custom deck editor"
+        },
+        {
+          "path": "shipped/apps/6757947194/04.webp",
+          "alt": "Buzzed After Dark prompt card"
+        },
+        {
+          "path": "shipped/apps/6757947194/05.webp",
+          "alt": "Buzzed group-vote challenge card"
+        },
+        {
+          "path": "shipped/apps/6757947194/06.webp",
+          "alt": "Buzzed personal truth challenge card"
+        },
+        {
+          "path": "shipped/apps/6757947194/07.webp",
+          "alt": "Buzzed Social Sabotage phone challenge"
+        },
+        {
+          "path": "shipped/apps/6757947194/08.webp",
+          "alt": "Buzzed starter challenge card"
+        }
+      ]
+    },
+    "6748024051": {
+      "icon": "shipped/apps/6748024051/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6748024051/00.webp",
+          "alt": "NoteFly audio capture and MemoMagic workflow"
+        },
+        {
+          "path": "shipped/apps/6748024051/01.webp",
+          "alt": "NoteFly input options for recordings, audio, text, documents, scans, whiteboards, web links, and YouTube"
+        },
+        {
+          "path": "shipped/apps/6748024051/02.webp",
+          "alt": "NoteFly AI summary screen with multilingual support"
+        },
+        {
+          "path": "shipped/apps/6748024051/03.webp",
+          "alt": "NoteFly quizzes and flashcards generated from a note"
+        },
+        {
+          "path": "shipped/apps/6748024051/04.webp",
+          "alt": "NoteFly mind map generated from a note"
+        }
+      ]
+    },
+    "6761237352": {
+      "icon": "shipped/apps/6761237352/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6761237352/01.webp",
+          "alt": "Dilemma voice-enabled would-you-rather prompt"
+        },
+        {
+          "path": "shipped/apps/6761237352/02.webp",
+          "alt": "Dilemma player-selection spinner"
+        },
+        {
+          "path": "shipped/apps/6761237352/03.webp",
+          "alt": "Dilemma spoken choice screen"
+        },
+        {
+          "path": "shipped/apps/6761237352/04.webp",
+          "alt": "Dilemma offline choice screen"
+        }
+      ]
+    },
+    "6749757392": {
+      "icon": "shipped/apps/6749757392/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6749757392/01.webp",
+          "alt": "WenLambo scan, analyze, and search introduction"
+        },
+        {
+          "path": "shipped/apps/6749757392/02.webp",
+          "alt": "WenLambo memecoin chart capture screen"
+        },
+        {
+          "path": "shipped/apps/6749757392/03.webp",
+          "alt": "WenLambo chart screenshot review and analyze action"
+        },
+        {
+          "path": "shipped/apps/6749757392/04.webp",
+          "alt": "WenLambo AI chart analysis in progress"
+        },
+        {
+          "path": "shipped/apps/6749757392/05.webp",
+          "alt": "WenLambo AI buy recommendation and position guidance"
+        }
+      ]
+    },
+    "6748883355": {
+      "icon": "shipped/apps/6748883355/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6748883355/01.webp",
+          "alt": "FlipFocus focus timer with a flip-clock countdown"
+        },
+        {
+          "path": "shipped/apps/6748883355/02.webp",
+          "alt": "FlipFocus active focus session on an orange gradient"
+        },
+        {
+          "path": "shipped/apps/6748883355/03.webp",
+          "alt": "FlipFocus task-planning screen for today's sessions"
+        },
+        {
+          "path": "shipped/apps/6748883355/04.webp",
+          "alt": "FlipFocus timer and task pages shown together"
+        },
+        {
+          "path": "shipped/apps/6748883355/05.webp",
+          "alt": "FlipFocus daily streaks and completed-session history"
+        },
+        {
+          "path": "shipped/apps/6748883355/06.webp",
+          "alt": "FlipFocus visual theme selection"
+        }
+      ]
+    },
+    "6759958663": {
+      "icon": "shipped/apps/6759958663/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6759958663/01.webp",
+          "alt": "Most Likely To game-vibe selection"
+        },
+        {
+          "path": "shipped/apps/6759958663/02.webp",
+          "alt": "Most Likely To listen-and-vote prompt"
+        },
+        {
+          "path": "shipped/apps/6759958663/03.webp",
+          "alt": "Most Likely To countdown prompt"
+        },
+        {
+          "path": "shipped/apps/6759958663/04.webp",
+          "alt": "Most Likely To answer and group-vote screen"
+        }
+      ]
+    },
+    "6758606033": {
+      "icon": "shipped/apps/6758606033/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6758606033/01.webp",
+          "alt": "Rouly party roulette wheel spinning"
+        },
+        {
+          "path": "shipped/apps/6758606033/02.webp",
+          "alt": "Rouly roulette wheel selecting the next player"
+        },
+        {
+          "path": "shipped/apps/6758606033/03.webp",
+          "alt": "Rouly selected-player challenge card"
+        },
+        {
+          "path": "shipped/apps/6758606033/04.webp",
+          "alt": "Rouly read-aloud challenge card"
+        }
+      ]
+    },
+    "6749230692": {
+      "icon": "shipped/apps/6749230692/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6749230692/01.webp",
+          "alt": "New Scan QR instant scanner view"
+        },
+        {
+          "path": "shipped/apps/6749230692/02.webp",
+          "alt": "New Scan QR creation screen with QR code type choices"
+        },
+        {
+          "path": "shipped/apps/6749230692/03.webp",
+          "alt": "New Scan QR result screen with open, copy, and share actions"
+        },
+        {
+          "path": "shipped/apps/6749230692/04.webp",
+          "alt": "New Scan QR organized scan history"
+        }
+      ]
+    },
+    "6758385148": {
+      "icon": "shipped/apps/6758385148/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6758385148/01.webp",
+          "alt": "YIKES truth prompt card"
+        },
+        {
+          "path": "shipped/apps/6758385148/02.webp",
+          "alt": "YIKES dare prompt card"
+        },
+        {
+          "path": "shipped/apps/6758385148/03.webp",
+          "alt": "YIKES truth-or-dare choice screen"
+        },
+        {
+          "path": "shipped/apps/6758385148/04.webp",
+          "alt": "YIKES game-vibe pack selection"
+        },
+        {
+          "path": "shipped/apps/6758385148/05.webp",
+          "alt": "YIKES custom card editor"
+        },
+        {
+          "path": "shipped/apps/6758385148/06.webp",
+          "alt": "YIKES leaderboard with player scores"
+        }
+      ]
+    },
+    "6759959558": {
+      "icon": "shipped/apps/6759959558/icon.webp",
+      "screenshots": [
+        {
+          "path": "shipped/apps/6759959558/01.webp",
+          "alt": "Never Ever self-running game introduction"
+        },
+        {
+          "path": "shipped/apps/6759959558/02.webp",
+          "alt": "Never Ever automatic player selection"
+        },
+        {
+          "path": "shipped/apps/6759959558/03.webp",
+          "alt": "Never Ever spoken-question screen"
+        },
+        {
+          "path": "shipped/apps/6759959558/04.webp",
+          "alt": "Never Ever five-second answer countdown"
+        },
+        {
+          "path": "shipped/apps/6759959558/05.webp",
+          "alt": "Never Ever self-running card stack"
+        }
+      ]
+    }
+  }
+}
