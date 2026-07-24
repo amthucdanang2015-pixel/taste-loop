@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "framer-motion";
 import { copyText } from "@/lib/copyText";
 import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor } from "lucide-react";
@@ -9,6 +10,11 @@ import {
   TextEffectRenderer,
   type TextEffectTemplate,
 } from "./anim/TextEffects";
+import {
+  TextOptionsPanel,
+  DEFAULT_TEXT_OPTIONS,
+  type TextOptions,
+} from "./anim/TextOptionsPanel";
 import { ANIM_ITEMS, ANIM_CATEGORIES, USE_BY_CAT, type AnimItem } from "@/data/animations";
 import { AnimDemo } from "@/components/anim";
 import { Stage } from "@/components/anim/Stage";
@@ -40,7 +46,6 @@ const ENTRANCE_COLOR = "#7c5cff";
 
 // ─── Spring preset ────────────────────────────────────────────────────────────
 
-const SPRING = { type: "spring" as const, stiffness: 220, damping: 30, mass: 1.2 };
 const EASE = { ease: [0.22, 1, 0.36, 1] as const, duration: 0.58 };
 
 // ─── Ripple hook ──────────────────────────────────────────────────────────────
@@ -68,8 +73,75 @@ function useRipple() {
 
 export function AnimationStudio() {
   const [q] = useState("");
-  const [activeType, setActiveType] = useState<string>("gallery");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const typeParam = searchParams.get("type");
+  const itemParam = searchParams.get("item");
+
+  const selectedId = useMemo(() => {
+    if (!itemParam) return null;
+    const isText = TEXT_EFFECT_TEMPLATES.some((t) => t.id === itemParam);
+    if (isText) return itemParam;
+    const isAnim = ANIM_ITEMS.some((a) => a.slug === itemParam);
+    if (isAnim) return itemParam;
+    return null;
+  }, [itemParam]);
+
+  const activeType = useMemo(() => {
+    if (typeParam && ANIMATION_TYPES.some((t) => t.id === typeParam && !t.badge)) {
+      return typeParam;
+    }
+    if (selectedId) {
+      const textItem = TEXT_EFFECT_TEMPLATES.find((t) => t.id === selectedId);
+      if (textItem) return "text-effect";
+      const animItem = ANIM_ITEMS.find((a) => a.slug === selectedId);
+      if (animItem) return animItem.category;
+    }
+    return "gallery";
+  }, [typeParam, selectedId]);
+
+  const createQueryString = useCallback(
+    (type?: string | null, item?: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (type && type !== "gallery") {
+        params.set("type", type);
+      } else {
+        params.delete("type");
+      }
+      if (item) {
+        params.set("item", item);
+      } else {
+        params.delete("item");
+      }
+      const queryString = params.toString();
+      return queryString ? `${pathname}?${queryString}` : pathname;
+    },
+    [searchParams, pathname]
+  );
+
+  const handleSelectCategory = useCallback(
+    (typeId: string) => {
+      const nextUrl = createQueryString(typeId, null);
+      router.push(nextUrl, { scroll: false });
+    },
+    [createQueryString, router]
+  );
+
+  const handleSelectItem = useCallback(
+    (itemKey: string) => {
+      const nextUrl = createQueryString(activeType, itemKey);
+      router.push(nextUrl, { scroll: false });
+    },
+    [createQueryString, activeType, router]
+  );
+
+  const handleCloseDetail = useCallback(() => {
+    const nextUrl = createQueryString(activeType, null);
+    router.push(nextUrl, { scroll: false });
+  }, [createQueryString, activeType, router]);
+
   const filteredTextEffects = useMemo(() => {
     const n = q.trim().toLowerCase();
     if (!n) return TEXT_EFFECT_TEMPLATES;
@@ -95,10 +167,45 @@ export function AnimationStudio() {
   // Escape to close
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setSelectedId(null);
+      if (e.key === "Escape" && selectedId) {
+        handleCloseDetail();
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, handleCloseDetail]);
+
+  const scrollPosRef = useRef<number>(0);
+  const prevSelectedIdRef = useRef<string | null>(selectedId);
+  const prevActiveTypeRef = useRef<string>(activeType);
+
+  useEffect(() => {
+    if (prevActiveTypeRef.current !== activeType) {
+      prevActiveTypeRef.current = activeType;
+      scrollPosRef.current = 0;
+      window.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
+
+    if (prevSelectedIdRef.current === null && selectedId !== null) {
+      scrollPosRef.current = window.scrollY;
+      document.body.style.overflow = "hidden";
+    } else if (prevSelectedIdRef.current !== null && selectedId === null) {
+      document.body.style.overflow = "";
+      window.scrollTo({ top: scrollPosRef.current, behavior: "instant" });
+    } else if (selectedId !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    prevSelectedIdRef.current = selectedId;
+  }, [selectedId, activeType]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   const config = isTextEffect
@@ -135,8 +242,7 @@ export function AnimationStudio() {
                   key={t.id}
                   onClick={() => {
                     if (!t.badge) {
-                      setActiveType(t.id);
-                      setSelectedId(null);
+                      handleSelectCategory(t.id);
                     }
                   }}
                   disabled={!!t.badge}
@@ -164,9 +270,7 @@ export function AnimationStudio() {
       </aside>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div
-        className={`relative min-w-0 ${selectedId ? "lg:h-screen lg:overflow-hidden" : ""}`}
-      >
+      <div className="relative min-w-0">
         {config && config.items.length > 0 ? (
           <LayoutGroup>
             <div className="p-16">
@@ -181,7 +285,7 @@ export function AnimationStudio() {
                       {...(config.getProps as (x: any) => any)(item)}
                       isSelected={selectedId === key}
                       hasSelection={selectedId !== null}
-                      onSelect={() => setSelectedId(key)}
+                      onSelect={() => handleSelectItem(key)}
                     />
                   );
                 })}
@@ -192,7 +296,7 @@ export function AnimationStudio() {
               {config.selected && (
                 <config.Detail
                   {...(config.getProps as (x: any) => any)(config.selected)}
-                  onClose={() => setSelectedId(null)}
+                  onClose={handleCloseDetail}
                 />
               )}
             </AnimatePresence>
@@ -253,7 +357,6 @@ function EntranceCard({
 
   return (
     <motion.div
-      layoutId={`card-${item.slug}`}
       onClick={handleClick}
       animate={
         hasSelection && !isSelected
@@ -279,7 +382,7 @@ function EntranceCard({
         />
       ))}
 
-      <motion.div layoutId={`card-bar-${item.slug}`} className="relative flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         <span className="font-mono text-xs font-semibold text-white/40 group-hover:text-white/60">
           {displayIndex}
         </span>
@@ -289,19 +392,19 @@ function EntranceCard({
             PROMPT
           </span>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div layoutId={`card-stage-${item.slug}`} className="relative flex flex-1 w-full items-center justify-center overflow-hidden py-2">
+      <div className="relative flex flex-1 w-full items-center justify-center overflow-hidden py-2">
         <div className="h-full w-full flex items-center justify-center">
           <AnimDemo demo={item.demo} variant={item.variant} />
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div layoutId={`card-label-${item.slug}`} className="relative text-center">
+      <div className="relative text-center">
         <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-white/35 group-hover:text-white/60">
           {item.name}
         </span>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -337,16 +440,17 @@ function EntranceExpandedDetail({
 
   return (
     <motion.div
-      layoutId={`card-${item.slug}`}
-      className="absolute inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14]"
-      transition={reduce ? { duration: 0 } : SPRING}
-      style={{ borderRadius: 0 }}
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
     >
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        transition={{ delay: 0.18, duration: 0.22 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
         className="flex items-center justify-between border-b border-white/8 px-6 py-4"
       >
         <button
@@ -370,11 +474,7 @@ function EntranceExpandedDetail({
       </motion.div>
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <motion.div
-          layoutId={`card-stage-${item.slug}`}
-          className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r"
-          transition={reduce ? { duration: 0 } : SPRING}
-        >
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
           <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
             <AnimatePresence mode="wait" initial={!reduce}>
               <motion.div
@@ -393,22 +493,22 @@ function EntranceExpandedDetail({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.15 }}
             onClick={() => setReplayKey((k) => k + 1)}
             className="absolute bottom-4 right-5 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
           >
             <RotateCw className="h-3 w-3" /> replay
           </motion.button>
-        </motion.div>
+        </div>
 
         <motion.div
-          initial={{ opacity: 0, x: 24 }}
+          initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 24 }}
-          transition={{ delay: 0.15, ...EASE }}
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
           className="flex w-full flex-col gap-5 overflow-y-auto p-8 lg:w-[420px] lg:shrink-0"
         >
-          <motion.div layoutId={`card-label-${item.slug}`} transition={reduce ? { duration: 0 } : SPRING}>
+          <div>
             <span className="font-mono text-[10px] uppercase tracking-widest text-[#a78bfa]">
               {ANIM_CATEGORIES.find((c) => c.slug === "entrances")?.name}
             </span>
@@ -418,7 +518,7 @@ function EntranceExpandedDetail({
             <p className="mt-2 text-sm leading-relaxed text-white/50">
               {item.def}
             </p>
-          </motion.div>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {ENTRANCE_SCENE[item.slug] && (
@@ -484,7 +584,6 @@ function TextEffectCard({
 
   return (
     <motion.div
-      layoutId={`card-${template.id}`}
       onClick={handleClick}
       // Siblings fade + scale down while a card is selected
       animate={
@@ -514,7 +613,7 @@ function TextEffectCard({
       ))}
 
       {/* Top bar */}
-      <motion.div layoutId={`card-bar-${template.id}`} className="relative flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         <span className="font-mono text-xs font-semibold text-white/40 group-hover:text-white/60">
           {displayIndex}
         </span>
@@ -524,19 +623,19 @@ function TextEffectCard({
             PROMPT
           </span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Center stage */}
-      <motion.div layoutId={`card-stage-${template.id}`} className="relative flex flex-1 items-center justify-center py-4">
+      <div className="relative flex flex-1 items-center justify-center py-4">
         <TextEffectRenderer template={template} text="" replayKey={0} />
-      </motion.div>
+      </div>
 
       {/* Bottom label */}
-      <motion.div layoutId={`card-label-${template.id}`} className="relative text-center">
+      <div className="relative text-center">
         <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-white/35 group-hover:text-white/60">
           {template.animationTextType}
         </span>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -552,12 +651,47 @@ function ExpandedDetail({
 }) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
   const [replayKey, setReplayKey] = useState(0);
+  const [textOptions, setTextOptions] = useState<TextOptions>({
+    ...DEFAULT_TEXT_OPTIONS,
+    text: template.defaultText,
+  });
   const reduce = useReducedMotion();
-  const text = `${template.prompt}\n\nType: ${template.animationTextType}\nCategory: ${template.category}`;
+
+  const promptText = useMemo(() => {
+    const customDetails: string[] = [];
+    if (textOptions.text && textOptions.text !== template.defaultText) {
+      customDetails.push(`Text: "${textOptions.text}"`);
+    }
+    if (textOptions.fontSize !== DEFAULT_TEXT_OPTIONS.fontSize) {
+      customDetails.push(`Font Size: ${textOptions.fontSize}px`);
+    }
+    if (textOptions.color !== DEFAULT_TEXT_OPTIONS.color) {
+      customDetails.push(`Color: ${textOptions.color}`);
+    }
+    if (textOptions.fontWeight !== DEFAULT_TEXT_OPTIONS.fontWeight) {
+      customDetails.push(`Font Weight: ${textOptions.fontWeight}`);
+    }
+    if (textOptions.letterSpacing !== DEFAULT_TEXT_OPTIONS.letterSpacing) {
+      customDetails.push(`Letter Spacing: ${textOptions.letterSpacing}px`);
+    }
+    if (textOptions.lineHeight !== DEFAULT_TEXT_OPTIONS.lineHeight) {
+      customDetails.push(`Line Height: ${textOptions.lineHeight}`);
+    }
+    if (textOptions.textAlign !== DEFAULT_TEXT_OPTIONS.textAlign) {
+      customDetails.push(`Text Alignment: ${textOptions.textAlign}`);
+    }
+
+    const customSuffix = customDetails.length > 0 ? `\n\nCustom Styling:\n- ${customDetails.join("\n- ")}` : "";
+    return `${template.prompt}${customSuffix}\n\nType: ${template.animationTextType}\nCategory: ${template.category}`;
+  }, [template, textOptions]);
 
   useEffect(() => {
     setCopyStatus("idle");
     setReplayKey((k) => k + 1);
+    setTextOptions({
+      ...DEFAULT_TEXT_OPTIONS,
+      text: template.defaultText,
+    });
   }, [template]);
 
   useEffect(() => {
@@ -566,25 +700,31 @@ function ExpandedDetail({
   }, []);
 
   async function copy() {
-    setCopyStatus((await copyText(text)) ? "success" : "error");
+    setCopyStatus((await copyText(promptText)) ? "success" : "error");
     setTimeout(() => setCopyStatus("idle"), 2200);
   }
 
+  const handleReset = () => {
+    setTextOptions({
+      ...DEFAULT_TEXT_OPTIONS,
+      text: template.defaultText,
+    });
+  };
+
   return (
-    // The card's layoutId — Framer Motion FLIP-animates from the card's
-    // bounding box to this absolute inset-0 position
     <motion.div
-      layoutId={`card-${template.id}`}
-      className="absolute inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14]"
-      transition={reduce ? { duration: 0 } : SPRING}
-      style={{ borderRadius: 0 }}
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
     >
       {/* ── Back button ── */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        transition={{ delay: 0.18, duration: 0.22 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
         className="flex items-center justify-between border-b border-white/8 px-6 py-4"
       >
         <button
@@ -609,12 +749,8 @@ function ExpandedDetail({
 
       {/* ── Split layout ── */}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        {/* Left — live stage (shares layoutId with card center) */}
-        <motion.div
-          layoutId={`card-stage-${template.id}`}
-          className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r"
-          transition={reduce ? { duration: 0 } : SPRING}
-        >
+        {/* Left — live stage */}
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
           {/* grid backdrop */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -624,57 +760,65 @@ function ExpandedDetail({
               backgroundSize: "48px 48px",
             }}
           />
-          <div className="relative scale-150">
-            <TextEffectRenderer template={template} text="" replayKey={replayKey} />
+          <div className="relative w-full max-w-xl px-8 flex items-center justify-center">
+            <TextEffectRenderer
+              template={template}
+              text={textOptions.text}
+              replayKey={replayKey}
+              options={textOptions}
+            />
           </div>
           {/* replay */}
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.15 }}
             onClick={() => setReplayKey((k) => k + 1)}
             className="absolute bottom-4 right-5 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
           >
             ↺ replay
           </motion.button>
-        </motion.div>
+        </div>
 
-        {/* Right — meta + prompt */}
+        {/* Right — Extensible text properties & prompt sidebar */}
         <motion.div
-          initial={{ opacity: 0, x: 24 }}
+          initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 24 }}
-          transition={{ delay: 0.15, ...EASE }}
-          className="flex w-full flex-col gap-5 overflow-y-auto p-8 lg:w-[420px] lg:shrink-0"
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
+          className="flex w-full flex-col overflow-y-auto p-6 lg:w-[420px] lg:shrink-0"
         >
-          {/* Label carries the same layoutId so it morphs in place */}
-          <motion.div layoutId={`card-label-${template.id}`} transition={reduce ? { duration: 0 } : SPRING}>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-pink-400/80">
-              {template.animationTextType}
-            </span>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-white">
-              {template.name}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">
-              {template.description}
-            </p>
-          </motion.div>
-
-          <div className="h-px bg-white/8" />
-
-          <div>
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-white/30">
-              AI Prompt
-            </p>
-            <pre className="overflow-y-auto whitespace-pre-wrap rounded-2xl border border-white/8 bg-black/40 p-5 font-mono text-[12px] leading-relaxed text-white/65">
-              {text}
-            </pre>
-          </div>
-
-          <p className="text-[11px] text-white/25">
-            Paste into v0 / Cursor / Claude
-          </p>
+          <TextOptionsPanel
+            options={textOptions}
+            onChange={setTextOptions}
+            onReset={handleReset}
+            defaultText={template.defaultText}
+            promptContent={
+              <div className="flex flex-col gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-pink-400/80">
+                    {template.animationTextType}
+                  </span>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    {template.name}
+                  </h2>
+                  <p className="mt-2 text-xs leading-relaxed text-white/50">
+                    {template.description}
+                  </p>
+                </div>
+                <div className="h-px bg-white/8" />
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                    AI Prompt
+                  </p>
+                  <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
+                    {promptText}
+                  </pre>
+                </div>
+              </div>
+            }
+          />
         </motion.div>
       </div>
     </motion.div>
