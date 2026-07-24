@@ -10,6 +10,7 @@ export default defineConfig([
       // Shipped media uses direct, manifest-owned CDN URLs. Its layouts reserve
       // dimensions and lazy-load below the fold, so an image proxy adds no value.
       "@next/next/no-img-element": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   globalIgnores([
