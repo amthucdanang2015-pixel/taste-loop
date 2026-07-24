@@ -16,9 +16,9 @@ function normalizeCdnOrigin(value: string | undefined): string | undefined {
   }
 }
 
-if (process.env.NODE_ENV === "production" && !configuredAssetCdnUrl) {
-  throw new Error("NEXT_PUBLIC_ASSET_CDN_URL is required for production Shipped media");
-}
+// if (process.env.NODE_ENV === "production" && !configuredAssetCdnUrl) {
+//   throw new Error("NEXT_PUBLIC_ASSET_CDN_URL is required for production Shipped media");
+// }
 
 /**
  * Production fails closed unless the web host supplies the durable CloudFront
