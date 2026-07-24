@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "types": ["node"]
+  },
+  "include": [
+    "backend.ts",
+    "assets/**/*.ts",
+    "leads/**/*.ts",
+    "functions/lead-intake/**/*.ts",
+    "../src/lib/leads/contract.ts"
+  ]
+}
