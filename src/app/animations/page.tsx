@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AnimationStudio } from "@/components/AnimationStudio";
 import { ANIM_ITEMS } from "@/data/animations";
 import type { Metadata } from "next";
@@ -19,7 +20,9 @@ export default function AnimationsPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <AnimationStudio />
+      <Suspense fallback={<div className="min-h-screen bg-[#0d0c14]" />}>
+        <AnimationStudio />
+      </Suspense>
     </>
   );
 }
