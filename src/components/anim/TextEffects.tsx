@@ -354,55 +354,91 @@ function useAutoLoop(intervalMs = 3500) {
   return loopCount;
 }
 
+import type { TextOptions } from "./TextOptionsPanel";
+
 export function TextEffectRenderer({
   template,
   text,
   replayKey,
+  options,
 }: {
   template: TextEffectTemplate;
-  text: string;
-  replayKey: number;
+  text?: string;
+  replayKey?: number;
+  options?: TextOptions;
 }) {
-  const content = text || template.defaultText;
+  const content = options?.text || text || template.defaultText;
   const loopCount = useAutoLoop(4000);
-  const currentKey = `${replayKey}-${loopCount}`;
+  const currentKey = `${replayKey ?? 0}-${loopCount}`;
 
-  switch (template.animationTextType) {
-    case "typewriter": return <TypewriterEffect text={content} key={currentKey} />;
-    case "stagger-up": return <StaggerUpEffect text={content} key={currentKey} />;
-    case "fade-words": return <FadeWordsEffect text={content} key={currentKey} />;
-    case "character-pop": return <CharacterPopEffect text={content} key={currentKey} />;
-    case "gradient-wave": return <GradientWaveEffect text={content} key={currentKey} />;
-    case "glitch": return <GlitchEffect text={content} key={currentKey} />;
-    case "3d-flip": return <Flip3DEffect text={content} key={currentKey} />;
-    case "neon-glow": return <NeonGlowEffect text={content} key={currentKey} />;
-    case "scramble": return <ScrambleEffect text={content} key={currentKey} />;
-    case "blur-reveal": return <BlurRevealEffect text={content} key={currentKey} />;
-    case "wave": return <WaveEffect text={content} key={currentKey} />;
-    case "liquid-fill": return <LiquidFillEffect text={content} key={currentKey} />;
-    case "chrome-shine": return <ChromeShineEffect text={content} key={currentKey} />;
-    case "focus-blur": return <FocusBlurEffect text={content} key={currentKey} />;
-    case "echo": return <EchoEffect text={content} key={currentKey} />;
-    case "spectrum": return <SpectrumEffect text={content} key={currentKey} />;
-    case "jitter": return <JitterEffect text={content} key={currentKey} />;
-    case "anaglyph": return <AnaglyphEffect text={content} key={currentKey} />;
-    case "flap": return <FlapEffect text={content} key={currentKey} />;
-    case "elastic": return <ElasticEffect text={content} key={currentKey} />;
-    case "spotlight": return <SpotlightEffect text={content} key={currentKey} />;
-    case "ember": return <EmberEffect text={content} key={currentKey} />;
-    case "melt": return <MeltEffect text={content} key={currentKey} />;
-    case "heartbeat": return <HeartbeatEffect text={content} key={currentKey} />;
-    case "marker": return <MarkerEffect text={content} key={currentKey} />;
-    case "hologram": return <HologramEffect text={content} key={currentKey} />;
-    case "kinetic": return <KineticEffect text={content} key={currentKey} />;
-    case "blackout": return <BlackoutEffect text={content} key={currentKey} />;
-    case "magnetic": return <MagneticEffect text={content} key={currentKey} />;
-    case "pendulum": return <PendulumEffect text={content} key={currentKey} />;
-    case "smoke": return <SmokeEffect text={content} key={currentKey} />;
-    case "scanner": return <ScannerEffect text={content} key={currentKey} />;
-    default:
-      return <span className="text-2xl font-bold text-white">{content}</span>;
+  const renderEffect = () => {
+    switch (template.animationTextType) {
+      case "typewriter": return <TypewriterEffect text={content} key={currentKey} />;
+      case "stagger-up": return <StaggerUpEffect text={content} key={currentKey} />;
+      case "fade-words": return <FadeWordsEffect text={content} key={currentKey} />;
+      case "character-pop": return <CharacterPopEffect text={content} key={currentKey} />;
+      case "gradient-wave": return <GradientWaveEffect text={content} key={currentKey} />;
+      case "glitch": return <GlitchEffect text={content} key={currentKey} />;
+      case "3d-flip": return <Flip3DEffect text={content} key={currentKey} />;
+      case "neon-glow": return <NeonGlowEffect text={content} key={currentKey} />;
+      case "scramble": return <ScrambleEffect text={content} key={currentKey} />;
+      case "blur-reveal": return <BlurRevealEffect text={content} key={currentKey} />;
+      case "wave": return <WaveEffect text={content} key={currentKey} />;
+      case "liquid-fill": return <LiquidFillEffect text={content} key={currentKey} />;
+      case "chrome-shine": return <ChromeShineEffect text={content} key={currentKey} />;
+      case "focus-blur": return <FocusBlurEffect text={content} key={currentKey} />;
+      case "echo": return <EchoEffect text={content} key={currentKey} />;
+      case "spectrum": return <SpectrumEffect text={content} key={currentKey} />;
+      case "jitter": return <JitterEffect text={content} key={currentKey} />;
+      case "anaglyph": return <AnaglyphEffect text={content} key={currentKey} />;
+      case "flap": return <FlapEffect text={content} key={currentKey} />;
+      case "elastic": return <ElasticEffect text={content} key={currentKey} />;
+      case "spotlight": return <SpotlightEffect text={content} key={currentKey} />;
+      case "ember": return <EmberEffect text={content} key={currentKey} />;
+      case "melt": return <MeltEffect text={content} key={currentKey} />;
+      case "heartbeat": return <HeartbeatEffect text={content} key={currentKey} />;
+      case "marker": return <MarkerEffect text={content} key={currentKey} />;
+      case "hologram": return <HologramEffect text={content} key={currentKey} />;
+      case "kinetic": return <KineticEffect text={content} key={currentKey} />;
+      case "blackout": return <BlackoutEffect text={content} key={currentKey} />;
+      case "magnetic": return <MagneticEffect text={content} key={currentKey} />;
+      case "pendulum": return <PendulumEffect text={content} key={currentKey} />;
+      case "smoke": return <SmokeEffect text={content} key={currentKey} />;
+      case "scanner": return <ScannerEffect text={content} key={currentKey} />;
+      default:
+        return <span className="text-2xl font-bold text-white">{content}</span>;
+    }
+  };
+
+  if (options) {
+    const customStyle: Record<string, string> = {};
+
+    if (options.fontSize) customStyle["--custom-font-size"] = `${options.fontSize}px`;
+    if (options.fontWeight) customStyle["--custom-font-weight"] = String(options.fontWeight);
+    if (options.fontFamily) customStyle["--custom-font-family"] = options.fontFamily;
+    if (options.letterSpacing !== undefined) customStyle["--custom-letter-spacing"] = `${options.letterSpacing}px`;
+    if (options.lineHeight !== undefined) customStyle["--custom-line-height"] = String(options.lineHeight);
+    if (options.textAlign) customStyle["--custom-text-align"] = options.textAlign;
+    if (options.color) customStyle["--custom-color"] = options.color;
+
+    return (
+      <div
+        style={customStyle as React.CSSProperties}
+        className="w-full flex items-center justify-center transition-all duration-150 whitespace-pre-wrap text-inherit
+          [&_*]:[font-size:var(--custom-font-size,inherit)!important]
+          [&_*]:[font-weight:var(--custom-font-weight,inherit)!important]
+          [&_*:not([style*='transparent']):not([style*='BackgroundClip'])]:[color:var(--custom-color,inherit)]
+          [&_*]:[font-family:var(--custom-font-family,inherit)!important]
+          [&_*]:[letter-spacing:var(--custom-letter-spacing,inherit)!important]
+          [&_*]:[line-height:var(--custom-line-height,inherit)!important]
+          [&_*]:[text-align:var(--custom-text-align,inherit)!important]"
+      >
+        {renderEffect()}
+      </div>
+    );
   }
+
+  return renderEffect();
 }
 
 // ─── Existing effects ─────────────────────────────────────────────────────────
