@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "framer-motion";
 import { copyText } from "@/lib/copyText";
-import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor } from "lucide-react";
+import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor, Search, ArrowRight, X } from "lucide-react";
 import {
   TEXT_EFFECT_TEMPLATES,
   TextEffectRenderer,
@@ -83,6 +83,11 @@ export function AnimationStudio() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [modalSearchQuery, setModalSearchQuery] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const typeParam = searchParams.get("type");
   const itemParam = searchParams.get("item");
 
@@ -147,6 +152,66 @@ export function AnimationStudio() {
     const nextUrl = createQueryString(activeType, null);
     router.push(nextUrl, { scroll: false });
   }, [createQueryString, activeType, router]);
+
+  const allSearchableItems = useMemo(() => {
+    const anims = ANIM_ITEMS.map((item) => {
+      const catObj = ANIMATION_TYPES.find((t) => t.id === item.category);
+      return {
+        id: item.slug,
+        name: item.name,
+        category: item.category,
+        categoryName: catObj?.label ?? item.category,
+        def: item.def,
+      };
+    });
+
+    const texts = TEXT_EFFECT_TEMPLATES.map((tmpl) => ({
+      id: tmpl.id,
+      name: tmpl.name,
+      category: "text-effect",
+      categoryName: "Text Effect",
+      def: tmpl.description,
+    }));
+
+    return [...anims, ...texts];
+  }, []);
+
+  const filteredSearchResults = useMemo(() => {
+    const query = modalSearchQuery.trim().toLowerCase();
+    if (!query) return allSearchableItems;
+    return allSearchableItems.filter((item) =>
+      `${item.name} ${item.categoryName} ${item.def}`.toLowerCase().includes(query)
+    );
+  }, [allSearchableItems, modalSearchQuery]);
+
+  const handleSelectSearchResult = useCallback(
+    (itemKey: string, categoryId: string) => {
+      const nextUrl = createQueryString(categoryId, itemKey);
+      router.push(nextUrl, { scroll: false });
+      setSearchModalOpen(false);
+      setModalSearchQuery("");
+    },
+    [createQueryString, router]
+  );
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchModalOpen((prev) => !prev);
+        setModalSearchQuery("");
+        setHighlightedIndex(0);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    if (searchModalOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [searchModalOpen]);
 
   const filteredTextEffects = useMemo(() => {
     const n = q.trim().toLowerCase();
@@ -224,28 +289,49 @@ export function AnimationStudio() {
       getProps: (x: TextEffectTemplate) => ({ template: x }),
     }
     : activeType === "gallery"
-    ? {
-      items: ANIM_ITEMS.filter((a) => a.category === activeType),
-      Card: EntranceCard as any,
-      Detail: GalleryExpandedDetail as any,
-      selected: selectedAnimItem,
-      key: "slug",
-      getProps: (x: AnimItem) => ({ item: x }),
-    }
-    : {
-      items: ANIM_ITEMS.filter((a) => a.category === activeType),
-      Card: EntranceCard as any,
-      Detail: EntranceExpandedDetail as any,
-      selected: selectedAnimItem,
-      key: "slug",
-      getProps: (x: AnimItem) => ({ item: x }),
-    };
+      ? {
+        items: ANIM_ITEMS.filter((a) => a.category === activeType),
+        Card: EntranceCard as any,
+        Detail: GalleryExpandedDetail as any,
+        selected: selectedAnimItem,
+        key: "slug",
+        getProps: (x: AnimItem) => ({ item: x }),
+      }
+      : {
+        items: ANIM_ITEMS.filter((a) => a.category === activeType),
+        Card: EntranceCard as any,
+        Detail: EntranceExpandedDetail as any,
+        selected: selectedAnimItem,
+        key: "slug",
+        getProps: (x: AnimItem) => ({ item: x }),
+      };
 
   return (
     <div className="flex min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[260px_1fr]">
       {/* ── Left Rail ──────────────────────────────────────────────────────── */}
       <aside className="scroll-slim shrink-0 border-b border-line lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
-        <div className="px-4 pb-6 pt-20 lg:pt-24">
+        <div className="px-3 pb-6 pt-20 lg:pt-24">
+          {/* Search Trigger Input Box */}
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setSearchModalOpen(true);
+                setModalSearchQuery("");
+                setHighlightedIndex(0);
+              }}
+              className="group flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-left transition hover:border-white/20 hover:bg-white/[0.07]"
+            >
+              <div className="flex items-center gap-1 text-xs text-white/50 group-hover:text-white/70">
+                <Search className="h-3.5 w-3.5" />
+                <span className="font-mono">Search Components...</span>
+              </div>
+              <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40">
+                ⌘ + K
+              </kbd>
+            </button>
+          </div>
+
           <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
             Animation Type
           </p>
@@ -325,6 +411,109 @@ export function AnimationStudio() {
           />
         )}
       </div>
+
+      {/* ── Search Modal Palette ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {searchModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => setSearchModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 p-4 pt-20 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -10 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-white/15 bg-[#12111c] shadow-2xl"
+            >
+              {/* Top Search Input Header */}
+              <div className="flex items-center border-b border-white/10 px-4 py-3">
+                <Search className="mr-3 h-4 w-4 shrink-0 text-white/40" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search Components..."
+                  value={modalSearchQuery}
+                  onChange={(e) => {
+                    setModalSearchQuery(e.target.value);
+                    setHighlightedIndex(0);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setHighlightedIndex((prev) => (prev + 1) % Math.max(1, filteredSearchResults.length));
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setHighlightedIndex((prev) => (prev - 1 + filteredSearchResults.length) % Math.max(1, filteredSearchResults.length));
+                    } else if (e.key === "Enter" && filteredSearchResults[highlightedIndex]) {
+                      e.preventDefault();
+                      const item = filteredSearchResults[highlightedIndex];
+                      handleSelectSearchResult(item.id, item.category);
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      setSearchModalOpen(false);
+                    }
+                  }}
+                  className="w-full bg-transparent font-mono text-sm text-white placeholder-white/40 focus:outline-none"
+                />
+                {modalSearchQuery && (
+                  <button
+                    onClick={() => setModalSearchQuery("")}
+                    className="mr-2 text-white/40 hover:text-white"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/30">
+                  ESC
+                </kbd>
+              </div>
+
+              {/* Body List */}
+              <div className="scroll-slim flex max-h-80 flex-col overflow-y-auto p-2">
+                <div className="px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white/30">
+                  Libraries
+                </div>
+                {filteredSearchResults.length > 0 ? (
+                  filteredSearchResults.map((item, idx) => {
+                    const isHighlighted = idx === highlightedIndex;
+                    return (
+                      <button
+                        key={`${item.category}-${item.id}`}
+                        onClick={() => handleSelectSearchResult(item.id, item.category)}
+                        onMouseEnter={() => setHighlightedIndex(idx)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition ${isHighlighted
+                          ? "bg-white/10 text-white"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                          }`}
+                      >
+                        <div className="flex items-center gap-2.5 overflow-hidden">
+                          <ArrowRight className="h-3.5 w-3.5 shrink-0 text-white/40" />
+                          <span className="truncate font-mono text-xs font-medium">
+                            {item.name}
+                          </span>
+                        </div>
+                        <span className="shrink-0 rounded bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/40">
+                          {item.categoryName}
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-8 text-center font-mono text-xs text-white/30">
+                    No matching animation components found
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -595,16 +784,16 @@ function GalleryExpandedDetail({
     setReplayKey((k) => k + 1);
     setGalleryOptions(
       DEFAULT_GALLERY_OPTIONS[item.variant] ??
-        DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
-        BASE_DEFAULT_GALLERY_OPTIONS
+      DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
+      BASE_DEFAULT_GALLERY_OPTIONS
     );
   }, [item]);
 
   const handleReset = () => {
     setGalleryOptions(
       DEFAULT_GALLERY_OPTIONS[item.variant] ??
-        DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
-        BASE_DEFAULT_GALLERY_OPTIONS
+      DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
+      BASE_DEFAULT_GALLERY_OPTIONS
     );
   };
 
