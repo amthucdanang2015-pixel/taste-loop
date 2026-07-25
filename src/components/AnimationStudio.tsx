@@ -91,6 +91,16 @@ export function AnimationStudio() {
   const typeParam = searchParams.get("type");
   const itemParam = searchParams.get("item");
 
+  const [mobileView, setMobileView] = useState<"categories" | "items">(() =>
+    itemParam || typeParam ? "items" : "categories"
+  );
+
+  useEffect(() => {
+    if (itemParam || typeParam) {
+      setMobileView("items");
+    }
+  }, [itemParam, typeParam]);
+
   const selectedId = useMemo(() => {
     if (!itemParam) return null;
     const isText = TEXT_EFFECT_TEMPLATES.some((t) => t.id === itemParam);
@@ -136,6 +146,7 @@ export function AnimationStudio() {
     (typeId: string) => {
       const nextUrl = createQueryString(typeId, null);
       router.push(nextUrl, { scroll: false });
+      setMobileView("items");
     },
     [createQueryString, router]
   );
@@ -190,6 +201,7 @@ export function AnimationStudio() {
       router.push(nextUrl, { scroll: false });
       setSearchModalOpen(false);
       setModalSearchQuery("");
+      setMobileView("items");
     },
     [createQueryString, router]
   );
@@ -307,10 +319,12 @@ export function AnimationStudio() {
       };
 
   return (
-    <div className="flex min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="flex min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
       {/* ── Left Rail ──────────────────────────────────────────────────────── */}
-      <aside className="scroll-slim shrink-0 border-b border-line lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
-        <div className="px-3 pb-6 pt-20 lg:pt-24">
+      <aside className={`scroll-slim shrink-0 border-b border-line lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${
+        mobileView === "items" ? "hidden lg:block" : "block"
+      }`}>
+        <div className="px-4 pb-6 pt-20 lg:pt-24">
           {/* Search Trigger Input Box */}
           <div className="mb-4">
             <button
@@ -320,10 +334,10 @@ export function AnimationStudio() {
                 setModalSearchQuery("");
                 setHighlightedIndex(0);
               }}
-              className="group flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-left transition hover:border-white/20 hover:bg-white/[0.07]"
+              className="group flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-white/20 hover:bg-white/[0.07]"
             >
-              <div className="flex items-center gap-1 text-xs text-white/50 group-hover:text-white/70">
-                <Search className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-2 text-xs text-white/50 group-hover:text-white/70">
+                <Search className="h-3.5 w-3.5 shrink-0" />
                 <span className="font-mono">Search Components...</span>
               </div>
               <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40">
@@ -371,11 +385,26 @@ export function AnimationStudio() {
       </aside>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div className="relative min-w-0">
+      <div className={`relative min-w-0 w-full flex-1 ${
+        mobileView === "categories" ? "hidden lg:block" : "block"
+      }`}>
+        {/* Mobile Header Bar */}
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pt-20 lg:hidden">
+          <button
+            onClick={() => setMobileView("categories")}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Categories
+          </button>
+          <span className="font-mono text-xs font-semibold text-white/50">
+            {ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType}
+          </span>
+        </div>
+
         {config && config.items.length > 0 ? (
           <LayoutGroup>
-            <div className="p-16">
-              <div className="grid grid-cols-1 border-b border-t border-l border-white/10 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="p-4 sm:p-8 lg:p-16">
+              <div className="grid grid-cols-1 border-b border-t border-l border-white/10 lg:grid-cols-3">
                 {config.items.map((item, idx) => {
                   const key = (item as any)[config.key] as string;
 
@@ -648,14 +677,14 @@ function EntranceExpandedDetail({
       animate={{ opacity: 1, scale: 1 }}
       exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
       transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
         transition={{ delay: 0.05, duration: 0.18 }}
-        className="flex items-center justify-between border-b border-white/8 px-6 py-4"
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
       >
         <button
           onClick={onClose}
@@ -677,8 +706,8 @@ function EntranceExpandedDetail({
         </button>
       </motion.div>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
           <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
             <AnimatePresence mode="wait" initial={!reduce}>
               <motion.div
@@ -850,7 +879,7 @@ function GalleryExpandedDetail({
       transition={
         reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
       }
-      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
       {/* Top Bar */}
       <motion.div
@@ -858,7 +887,7 @@ function GalleryExpandedDetail({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
         transition={{ delay: 0.05, duration: 0.18 }}
-        className="flex items-center justify-between border-b border-white/8 px-6 py-4"
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
       >
         <button
           onClick={onClose}
@@ -881,9 +910,9 @@ function GalleryExpandedDetail({
       </motion.div>
 
       {/* Split Layout */}
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {/* Left — Live Stage */}
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
           <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
             <AnimatePresence mode="wait" initial={!reduce}>
               <motion.div
@@ -1121,7 +1150,7 @@ function ExpandedDetail({
       animate={{ opacity: 1, scale: 1 }}
       exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
       transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
       {/* ── Back button ── */}
       <motion.div
@@ -1129,7 +1158,7 @@ function ExpandedDetail({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
         transition={{ delay: 0.05, duration: 0.18 }}
-        className="flex items-center justify-between border-b border-white/8 px-6 py-4"
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
       >
         <button
           onClick={onClose}
@@ -1152,9 +1181,9 @@ function ExpandedDetail({
       </motion.div>
 
       {/* ── Split layout ── */}
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {/* Left — live stage */}
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
           {/* grid backdrop */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.03]"

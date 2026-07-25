@@ -23,6 +23,24 @@ test("AnimationStudio.tsx includes left rail search input and modal component", 
   assert.match(studio, /ArrowRight/, "studio modal items must render item arrow indicator");
 });
 
+test("AnimationStudio.tsx left sidebar width and mobile responsiveness", async () => {
+  const studio = await read("src/components/AnimationStudio.tsx");
+
+  // Verify widened left sidebar grid definition (280px)
+  assert.match(studio, /lg:grid-cols-\[280px_1fr\]/, "studio must use 280px left rail width");
+
+  // Verify mobile responsive state and back button
+  assert.match(studio, /mobileView/, "studio must track mobileView state");
+  assert.match(studio, /Back to Categories/, "studio must render Back to Categories mobile button");
+
+  // Verify single column grid on mobile screens (1 row 1 item)
+  assert.match(studio, /grid grid-cols-1[^\n]*lg:grid-cols-3/, "studio grid must use 1 column on mobile and 3 columns on desktop");
+
+  // Verify full-width mobile container and mobile detail stage min-height
+  assert.match(studio, /w-full flex-1/, "body container must fill full width on mobile");
+  assert.match(studio, /min-h-\[340px\]/, "detail live stage must enforce min-height on mobile");
+});
+
 test("Animation search items cover both ANIM_ITEMS and TEXT_EFFECT_TEMPLATES", async () => {
   const animsSource = await read("src/data/animations.ts");
   const textsSource = await read("src/components/anim/TextEffects.tsx");
