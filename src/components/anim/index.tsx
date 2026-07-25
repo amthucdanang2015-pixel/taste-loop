@@ -6,7 +6,7 @@ import { TransitionDemo, ScrollDemo, EasingDemo, SpringDemo } from "./motionB";
 import { LoopDemo, PolishDemo, InteractionDemo, PerfDemo, PrincipleDemo } from "./motionC";
 import { GalleryDemo } from "./gallery";
 
-type Family = ComponentType<{ variant: string }>;
+type Family = ComponentType<{ variant: string; options?: any }>;
 
 const FAMILIES: Record<string, Family> = {
   entrance: EntranceDemo,
@@ -24,8 +24,8 @@ const FAMILIES: Record<string, Family> = {
   gallery: GalleryDemo,
 };
 
-export function AnimDemo({ demo, variant }: { demo: string; variant: string }) {
+export function AnimDemo({ demo, variant, options }: { demo: string; variant: string; options?: any }) {
   const Cmp = FAMILIES[demo];
   if (!Cmp) return <div className="flex h-full items-center justify-center text-sm text-white/30">Preview coming soon</div>;
-  return <Cmp variant={variant} />;
+  return <Cmp variant={variant} options={options} />;
 }

@@ -15,6 +15,12 @@ import {
   DEFAULT_TEXT_OPTIONS,
   type TextOptions,
 } from "./anim/TextOptionsPanel";
+import { GalleryOptionsPanel } from "./anim/GalleryOptionsPanel";
+import {
+  DEFAULT_GALLERY_OPTIONS,
+  BASE_DEFAULT_GALLERY_OPTIONS,
+  type GalleryOptions,
+} from "./anim/gallerySchema";
 import { ANIM_ITEMS, ANIM_CATEGORIES, USE_BY_CAT, type AnimItem } from "@/data/animations";
 import { AnimDemo } from "@/components/anim";
 import { Stage } from "@/components/anim/Stage";
@@ -216,6 +222,15 @@ export function AnimationStudio() {
       selected: selectedTemplate,
       key: "id",
       getProps: (x: TextEffectTemplate) => ({ template: x }),
+    }
+    : activeType === "gallery"
+    ? {
+      items: ANIM_ITEMS.filter((a) => a.category === activeType),
+      Card: EntranceCard as any,
+      Detail: GalleryExpandedDetail as any,
+      selected: selectedAnimItem,
+      key: "slug",
+      getProps: (x: AnimItem) => ({ item: x }),
     }
     : {
       items: ANIM_ITEMS.filter((a) => a.category === activeType),
@@ -552,6 +567,206 @@ function EntranceExpandedDetail({
           <p className="text-[11px] text-white/25">
             Paste into v0 / Cursor / Claude
           </p>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+function GalleryExpandedDetail({
+  item,
+  onClose,
+}: {
+  item: AnimItem;
+  onClose: () => void;
+}) {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [replayKey, setReplayKey] = useState(0);
+  const defaultOpts =
+    DEFAULT_GALLERY_OPTIONS[item.variant] ??
+    DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
+    BASE_DEFAULT_GALLERY_OPTIONS;
+  const [galleryOptions, setGalleryOptions] = useState<GalleryOptions>(defaultOpts);
+
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    setCopyStatus("idle");
+    setReplayKey((k) => k + 1);
+    setGalleryOptions(
+      DEFAULT_GALLERY_OPTIONS[item.variant] ??
+        DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
+        BASE_DEFAULT_GALLERY_OPTIONS
+    );
+  }, [item]);
+
+  const handleReset = () => {
+    setGalleryOptions(
+      DEFAULT_GALLERY_OPTIONS[item.variant] ??
+        DEFAULT_GALLERY_OPTIONS["proximity-orbit"] ??
+        BASE_DEFAULT_GALLERY_OPTIONS
+    );
+  };
+
+  const promptText = useMemo(() => {
+    const customDetails: string[] = [];
+    if (galleryOptions.cardWidth !== defaultOpts.cardWidth) {
+      customDetails.push(`Card Width: ${galleryOptions.cardWidth}px`);
+    }
+    if (galleryOptions.cardHeight !== defaultOpts.cardHeight) {
+      customDetails.push(`Card Height: ${galleryOptions.cardHeight}px`);
+    }
+    if (galleryOptions.borderRadius !== defaultOpts.borderRadius) {
+      customDetails.push(`Border Radius: ${galleryOptions.borderRadius}px`);
+    }
+    if (galleryOptions.gap !== defaultOpts.gap) {
+      customDetails.push(`Gap: ${galleryOptions.gap}px`);
+    }
+    if (galleryOptions.tilt !== defaultOpts.tilt) {
+      customDetails.push(`Tilt: ${galleryOptions.tilt}°`);
+    }
+    if (galleryOptions.sidewaysTilt !== defaultOpts.sidewaysTilt) {
+      customDetails.push(`Sideways Tilt: ${galleryOptions.sidewaysTilt}°`);
+    }
+    if (galleryOptions.inactiveOpacity !== defaultOpts.inactiveOpacity) {
+      customDetails.push(`Inactive Opacity: ${galleryOptions.inactiveOpacity}%`);
+    }
+    if (galleryOptions.autoplay !== defaultOpts.autoplay) {
+      customDetails.push(`Autoplay: ${galleryOptions.autoplay ? "On" : "Off"}`);
+    }
+    if (galleryOptions.showTitle !== defaultOpts.showTitle) {
+      customDetails.push(`Show Title: ${galleryOptions.showTitle ? "On" : "Off"}`);
+    }
+    if (galleryOptions.transition !== defaultOpts.transition) {
+      customDetails.push(`Transition: ${galleryOptions.transition}`);
+    }
+
+    const customSuffix =
+      customDetails.length > 0
+        ? `\n\nCustom Styling:\n- ${customDetails.join("\n- ")}`
+        : "";
+    return `${item.prompt}${customSuffix}\n\nPattern: ${item.name}\nCategory: Gallery Animations`;
+  }, [item, galleryOptions, defaultOpts]);
+
+  async function copy() {
+    setCopyStatus((await copyText(promptText)) ? "success" : "error");
+    setTimeout(() => setCopyStatus("idle"), 2200);
+  }
+
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={
+        reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
+      }
+      className="fixed inset-0 z-20 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[260px]"
+    >
+      {/* Top Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
+        className="flex items-center justify-between border-b border-white/8 px-6 py-4"
+      >
+        <button
+          onClick={onClose}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+        <button
+          onClick={copy}
+          className="inline-flex items-center gap-2 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-2 text-sm font-medium text-[#a78bfa] transition hover:bg-[#7c5cff]/20"
+        >
+          {copyStatus === "success" ? (
+            <Check className="h-4 w-4 text-emerald-400" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+          {copyStatus === "success" ? "Copied!" : "Copy Prompt"}
+        </button>
+      </motion.div>
+
+      {/* Split Layout */}
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        {/* Left — Live Stage */}
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden border-b border-white/8 lg:border-b-0 lg:border-r">
+          <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
+            <AnimatePresence mode="wait" initial={!reduce}>
+              <motion.div
+                key={`${item.slug}-${replayKey}`}
+                initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.99 }}
+                transition={
+                  reduce ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
+                }
+                className="flex h-full w-full items-center justify-center"
+              >
+                <AnimDemo demo={item.demo} variant={item.variant} options={galleryOptions} />
+              </motion.div>
+            </AnimatePresence>
+          </Stage>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.15 }}
+            onClick={() => setReplayKey((k) => k + 1)}
+            className="absolute bottom-4 right-5 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
+          >
+            <RotateCw className="h-3 w-3" /> replay
+          </motion.button>
+        </div>
+
+        {/* Right — Schema-driven Gallery Options Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
+          className="flex w-full flex-col overflow-y-auto p-6 lg:w-[420px] lg:shrink-0"
+        >
+          <GalleryOptionsPanel
+            variant={item.variant}
+            options={galleryOptions}
+            onChange={setGalleryOptions}
+            onReset={handleReset}
+            promptContent={
+              <div className="flex flex-col gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#a78bfa]">
+                    {item.name}
+                  </span>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    {item.name}
+                  </h2>
+                  <p className="mt-2 text-xs leading-relaxed text-white/50">
+                    {item.def}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                    Craft note
+                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/70">{item.tip}</p>
+                </div>
+                <div className="h-px bg-white/8" />
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                    AI Prompt
+                  </p>
+                  <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
+                    {promptText}
+                  </pre>
+                </div>
+              </div>
+            }
+          />
         </motion.div>
       </div>
     </motion.div>

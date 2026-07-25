@@ -34,10 +34,8 @@ export async function exportVideo(design: Design, anim: Anim, onProgress?: (p: n
       const candidates = ["avc1.640034", "avc1.640028", "avc1.4d0034", "avc1.42e01f"];
       let encoder: { configure: (c: unknown) => void; encode: (f: unknown, o?: unknown) => void; flush: () => Promise<void> } | null = null;
       for (const codec of candidates) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sup = await (g.VideoEncoder as any).isConfigSupported({ codec, width: W, height: H, bitrate, framerate: fps });
         if (sup?.supported) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           encoder = new (g.VideoEncoder as any)({ output: (chunk: unknown, meta: unknown) => muxer.addVideoChunk(chunk as never, meta as never), error: (e: unknown) => console.error(e) });
           encoder!.configure({ codec, width: W, height: H, bitrate, framerate: fps });
           break;
@@ -46,7 +44,6 @@ export async function exportVideo(design: Design, anim: Anim, onProgress?: (p: n
       if (encoder) {
         for (let i = 0; i < frames; i++) {
           render(ctx, applyAnim(design, anim, i / frames), W, H);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const frame = new (g.VideoFrame as any)(canvas, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
           encoder.encode(frame, { keyFrame: i % fps === 0 });
           frame.close();
