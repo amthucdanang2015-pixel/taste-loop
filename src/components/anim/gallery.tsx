@@ -32,10 +32,10 @@ const VOCABTUNES_APP: AppGalleryItem = {
 };
 
 const BUZZED_APP: AppGalleryItem = {
-  id: "6757947194",
+  id: "6761237352",
   name: "Buzzed Party",
-  icon: assetUrl(shippedManifest.apps["6757947194"].icon),
-  screenshots: shippedManifest.apps["6757947194"].screenshots.map((s) => ({
+  icon: assetUrl(shippedManifest.apps["6761237352"].icon),
+  screenshots: shippedManifest.apps["6761237352"].screenshots.map((s) => ({
     src: assetUrl(s.path),
     alt: s.alt,
   })),
@@ -101,10 +101,10 @@ function getMotionTransition(
     easingVal === "linear"
       ? "linear"
       : easingVal === "ease-in-out"
-      ? [0.42, 0, 0.58, 1]
-      : easingVal === "spring"
-      ? undefined
-      : [0.22, 1, 0.36, 1];
+        ? [0.42, 0, 0.58, 1]
+        : easingVal === "spring"
+          ? undefined
+          : [0.22, 1, 0.36, 1];
 
   if (transitionType === "Spring" || easingVal === "spring") {
     return { type: "spring", stiffness: Math.max(80, 360 / duration), damping: 24 };
@@ -289,9 +289,8 @@ function ProximityOrbitDemo({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
               transition={motionTrans}
-              className={`absolute ${
-                isDetail ? "bottom-6 text-sm px-4 py-2" : "bottom-2 text-[10px] px-2.5 py-1"
-              } z-40 flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/95 text-purple-100 backdrop-blur-xl shadow-2xl`}
+              className={`absolute ${isDetail ? "bottom-6 text-sm px-4 py-2" : "bottom-2 text-[10px] px-2.5 py-1"
+                } z-40 flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/95 text-purple-100 backdrop-blur-xl shadow-2xl`}
             >
               <Sparkles className="h-4 w-4 text-purple-400 shrink-0" />
               <span className="max-w-[340px] truncate">{activeShot.alt}</span>
@@ -374,11 +373,10 @@ function MagneticCarouselDemo({
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{ gap: `${gap}px` }}
-          className={`${
-            isDetail
-              ? "mt-12 p-4 border-white/20 bg-white/[0.04]"
-              : "mt-4 p-2 border-white/10 bg-white/[0.03]"
-          } flex max-w-full items-end justify-center overflow-x-auto rounded-2xl border backdrop-blur-xl scrollbar-none shadow-2xl transition-all`}
+          className={`${isDetail
+            ? "mt-12 p-4 border-white/20 bg-white/[0.04]"
+            : "mt-4 p-2 border-white/10 bg-white/[0.03]"
+            } flex max-w-full items-end justify-center overflow-x-auto rounded-2xl border backdrop-blur-xl scrollbar-none shadow-2xl transition-all`}
         >
           {shots.map((shot, idx) => {
             let scale = 1;
@@ -565,9 +563,8 @@ function RingGalleryDemo({
       >
         {showTitle && (
           <p
-            className={`absolute ${
-              isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
-            } font-medium text-white/40 z-20`}
+            className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
+              } font-medium text-white/40 z-20`}
           >
             Drag to spin 3D ring · Flings with physics momentum
           </p>
@@ -718,9 +715,8 @@ function RoundCarouselDemo({
       >
         {showTitle && (
           <p
-            className={`absolute ${
-              isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
-            } font-medium text-white/40 z-20`}
+            className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
+              } font-medium text-white/40 z-20`}
           >
             Click card to flip 3D · Drag cylinder to spin
           </p>
