@@ -319,9 +319,9 @@ export function AnimationStudio() {
       };
 
   return (
-    <div className="flex min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
+    <div className="block min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
       {/* ── Left Rail ──────────────────────────────────────────────────────── */}
-      <aside className={`scroll-slim shrink-0 border-b border-line lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${
+      <aside className={`scroll-slim w-full border-b border-line lg:w-auto lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${
         mobileView === "items" ? "hidden lg:block" : "block"
       }`}>
         <div className="px-4 pb-6 pt-20 lg:pt-24">
