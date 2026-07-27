@@ -91,6 +91,16 @@ export function AnimationStudio() {
   const typeParam = searchParams.get("type");
   const itemParam = searchParams.get("item");
 
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(media.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }, []);
+
   const [mobileView, setMobileView] = useState<"categories" | "items">(() =>
     itemParam || typeParam ? "items" : "categories"
   );
@@ -98,6 +108,8 @@ export function AnimationStudio() {
   useEffect(() => {
     if (itemParam || typeParam) {
       setMobileView("items");
+    } else {
+      setMobileView("categories");
     }
   }, [itemParam, typeParam]);
 
@@ -123,10 +135,23 @@ export function AnimationStudio() {
     return "gallery";
   }, [typeParam, selectedId]);
 
+  const isCategoryActive = useCallback(
+    (typeId: string) => {
+      if (typeParam || selectedId) {
+        return activeType === typeId;
+      }
+      if (isDesktop) {
+        return typeId === "gallery";
+      }
+      return false;
+    },
+    [typeParam, selectedId, activeType, isDesktop]
+  );
+
   const createQueryString = useCallback(
     (type?: string | null, item?: string | null) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (type && type !== "gallery") {
+      if (type) {
         params.set("type", type);
       } else {
         params.delete("type");
@@ -150,6 +175,11 @@ export function AnimationStudio() {
     },
     [createQueryString, router]
   );
+
+  const handleBackToCategories = useCallback(() => {
+    const nextUrl = createQueryString(null, null);
+    router.push(nextUrl, { scroll: false });
+  }, [createQueryString, router]);
 
   const handleSelectItem = useCallback(
     (itemKey: string) => {
@@ -350,7 +380,7 @@ export function AnimationStudio() {
           </p>
           <nav className="mt-3 flex flex-col gap-0.5">
             {ANIMATION_TYPES.map((t) => {
-              const on = activeType === t.id;
+              const on = isCategoryActive(t.id);
               return (
                 <button
                   key={t.id}
@@ -389,7 +419,7 @@ export function AnimationStudio() {
         {/* Mobile Header Bar */}
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pt-20 lg:hidden">
           <button
-            onClick={() => setMobileView("categories")}
+            onClick={handleBackToCategories}
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Categories

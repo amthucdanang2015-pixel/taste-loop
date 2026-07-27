@@ -39,6 +39,10 @@ test("AnimationStudio.tsx left sidebar width and mobile responsiveness", async (
   // Verify full-width mobile container and mobile detail stage min-height
   assert.match(studio, /w-full flex-1/, "body container must fill full width on mobile");
   assert.match(studio, /min-h-\[340px\]/, "detail live stage must enforce min-height on mobile");
+
+  // Verify active category state and mobile back button URL navigation
+  assert.match(studio, /isCategoryActive/, "studio must calculate active category using isCategoryActive");
+  assert.match(studio, /handleBackToCategories/, "studio must sync URL on mobile back button click");
 });
 
 test("Animation search items cover both ANIM_ITEMS and TEXT_EFFECT_TEMPLATES", async () => {
