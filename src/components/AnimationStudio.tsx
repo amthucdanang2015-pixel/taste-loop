@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "framer-motion";
 import { copyText } from "@/lib/copyText";
-import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor, Search, ArrowRight, X } from "lucide-react";
+import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor, Search, ArrowRight, X, Code2, Plug, Info } from "lucide-react";
 import {
   TEXT_EFFECT_TEMPLATES,
   TextEffectRenderer,
@@ -321,9 +321,8 @@ export function AnimationStudio() {
   return (
     <div className="block min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
       {/* ── Left Rail ──────────────────────────────────────────────────────── */}
-      <aside className={`scroll-slim w-full border-b border-line lg:w-auto lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${
-        mobileView === "items" ? "hidden lg:block" : "block"
-      }`}>
+      <aside className={`scroll-slim w-full border-b border-line lg:w-auto lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${mobileView === "items" ? "hidden lg:block" : "block"
+        }`}>
         <div className="px-4 pb-6 pt-20 lg:pt-24">
           {/* Search Trigger Input Box */}
           <div className="mb-4">
@@ -385,9 +384,8 @@ export function AnimationStudio() {
       </aside>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div className={`relative min-w-0 w-full flex-1 ${
-        mobileView === "categories" ? "hidden lg:block" : "block"
-      }`}>
+      <div className={`relative min-w-0 w-full flex-1 ${mobileView === "categories" ? "hidden lg:block" : "block"
+        }`}>
         {/* Mobile Header Bar */}
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pt-20 lg:hidden">
           <button
@@ -547,6 +545,1120 @@ export function AnimationStudio() {
   );
 }
 
+// ─── Copy Modal ──────────────────────────────────────────────────────────────
+
+type CopyOption = "code" | "framer" | "mcp";
+
+const COPY_OPTIONS: { id: CopyOption; label: string; icon: React.ReactNode; description: string }[] = [
+  {
+    id: "code",
+    label: "Copy Code",
+    icon: <Code2 className="h-5 w-5" />,
+    description: "Copy the complete component code, ready to customize.",
+  },
+  {
+    id: "framer",
+    label: "Copy in Framer",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+        <path d="M4 0h16v8h-8zm0 8h8l8 8H4zm0 8h8v8z" />
+      </svg>
+    ),
+    description: "Copy the component, paste it into Framer, and start building immediately.",
+  },
+  {
+    id: "mcp",
+    label: "Copy with MCP",
+    icon: <Plug className="h-5 w-5" />,
+    description:
+      "Connect with Claude, Cursor, Codex, and other AI coding tools, import components straight into your IDE, no manual setup needed.",
+  },
+];
+
+function getFullTextEffectCode(
+  type: string,
+  effectName: string,
+  textVal: string,
+  template: TextEffectTemplate
+): string {
+  const safeText = JSON.stringify(textVal);
+  const needsHooks = type === "scramble";
+  const needsMotion = type !== "scramble";
+  const reactImport = needsHooks
+    ? `import { useEffect, useState } from "react";`
+    : `import React from "react";`;
+  const motionImport = needsMotion ? `import { motion } from "framer-motion";` : "";
+
+  let body = "";
+
+  switch (type) {
+    case "typewriter":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="flex items-center font-mono text-2xl font-bold tracking-tight text-white sm:text-3xl">
+      <motion.span
+        initial={{ width: 0 }}
+        animate={{ width: "100%" }}
+        transition={{ duration: Math.max(1.2, text.length * 0.06), ease: "linear" }}
+        className="inline-block overflow-hidden whitespace-nowrap"
+      >
+        {text}
+      </motion.span>
+      <motion.span
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.8, repeat: Infinity }}
+        className="ml-1 inline-block h-7 w-2.5 bg-[#22d3ee]"
+      />
+    </div>
+  );
+}`;
+      break;
+
+    case "stagger-up":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const words = text.split(" ");
+  return (
+    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-2xl font-bold text-white sm:text-3xl">
+      {words.map((word, i) => (
+        <span key={i} className="inline-block overflow-hidden py-1">
+          <motion.span
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: i * 0.08, type: "spring", stiffness: 300, damping: 24 }}
+            className="inline-block"
+          >
+            {word}
+          </motion.span>
+        </span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "fade-words":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const words = text.split(" ");
+  return (
+    <div className="flex flex-wrap justify-center gap-x-2.5 gap-y-1 text-2xl font-medium text-white/90 sm:text-3xl">
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, filter: "blur(6px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          transition={{ duration: 0.4, delay: i * 0.1 }}
+          className="inline-block"
+        >
+          {word}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "character-pop":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex flex-wrap justify-center text-2xl font-extrabold tracking-wider text-white sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4, delay: i * 0.03, type: "spring", stiffness: 450, damping: 14 }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "gradient-wave":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="text-center text-2xl font-extrabold sm:text-4xl">
+      <motion.span
+        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        style={{
+          background: "linear-gradient(90deg, #a855f7, #22d3ee, #ec4899, #a855f7)",
+          backgroundSize: "300% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+        className="inline-block"
+      >
+        {text}
+      </motion.span>
+    </div>
+  );
+}`;
+      break;
+
+    case "glitch":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative text-2xl font-black tracking-widest text-white sm:text-3xl">
+      <motion.span
+        animate={{ x: [-2, 2, -1, 0] }}
+        transition={{ duration: 0.25, repeat: Infinity, repeatDelay: 1.2 }}
+        className="relative z-10 block"
+      >
+        {text}
+      </motion.span>
+      <span className="absolute inset-0 text-cyan-400 opacity-75" style={{ clipPath: "inset(0 0 55% 0)" }} aria-hidden>
+        {text}
+      </span>
+      <span className="absolute inset-0 text-rose-500 opacity-75" style={{ clipPath: "inset(45% 0 0 0)" }} aria-hidden>
+        {text}
+      </span>
+    </div>
+  );
+}`;
+      break;
+
+    case "scramble":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const [display, setDisplay] = useState(text);
+  const glyphs = "ABCDEFGIJKLMNOPQRSTUVXYZ0123456789#$@!%&";
+
+  useEffect(() => {
+    let frame = 0;
+    const maxFrames = 25;
+    const interval = setInterval(() => {
+      frame++;
+      if (frame >= maxFrames) {
+        setDisplay(text);
+        clearInterval(interval);
+      } else {
+        setDisplay(
+          text.split("").map((ch) => (ch === " " ? " " : glyphs[Math.floor(Math.random() * glyphs.length)])).join("")
+        );
+      }
+    }, 40);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return <div className="font-mono text-2xl font-bold tracking-widest text-emerald-400 sm:text-3xl">{display}</div>;
+}`;
+      break;
+
+    case "3d-flip":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex flex-wrap justify-center text-2xl font-bold tracking-tight text-white sm:text-3xl" style={{ perspective: "500px" }}>
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          initial={{ rotateX: 90, opacity: 0 }}
+          animate={{ rotateX: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-block origin-bottom"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "neon-glow":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        textShadow: [
+          "0 0 4px #fff, 0 0 11px #22d3ee, 0 0 24px #22d3ee, 0 0 48px #22d3ee",
+          "none",
+          "0 0 4px #fff, 0 0 11px #22d3ee, 0 0 24px #22d3ee, 0 0 48px #22d3ee",
+        ],
+        opacity: [1, 0.35, 1],
+      }}
+      transition={{ duration: 3.2, repeat: Infinity, times: [0, 0.5, 1] }}
+      className="text-center text-2xl font-black tracking-widest text-cyan-300 sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "blur-reveal":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      initial={{ filter: "blur(14px)", opacity: 0, scale: 0.95 }}
+      animate={{ filter: "blur(0px)", opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="text-center text-2xl font-bold tracking-tight text-white sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "wave":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest text-[#22d3ee] sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ y: [7, -7, 7] }}
+          transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut", delay: i * -0.14 }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "liquid-fill":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="text-2xl font-black tracking-widest sm:text-4xl">
+      <motion.span
+        animate={{ backgroundPosition: ["0% -110%", "0% 10%", "0% -110%"] }}
+        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          background: "linear-gradient(0deg, #22d3ee 0 46%, rgba(34,211,238,0.5) 48%, transparent 52% 100%)",
+          backgroundSize: "100% 220%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          WebkitTextStroke: "1px rgba(34,211,238,0.6)",
+        }}
+        className="inline-block"
+      >
+        {text}
+      </motion.span>
+    </div>
+  );
+}`;
+      break;
+
+    case "chrome-shine":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="text-2xl font-black tracking-widest sm:text-3xl">
+      <motion.span
+        animate={{ backgroundPosition: ["130% 0", "-130% 0"] }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          background: "linear-gradient(105deg, rgba(255,255,255,0.3) 0 38%, #fff 47%, #fff 50%, rgba(255,255,255,0.3) 53% 100%)",
+          backgroundSize: "260% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          color: "transparent",
+        }}
+        className="inline-block"
+      >
+        {text}
+      </motion.span>
+    </div>
+  );
+}`;
+      break;
+
+    case "focus-blur":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest text-white sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ filter: ["blur(0px)", "blur(7px)", "blur(0px)"], opacity: [1, 0.35, 1] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: i * 0.18 }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "echo":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative flex items-center justify-center text-2xl font-black tracking-widest text-white sm:text-3xl">
+      <span className="relative z-10">{text}</span>
+      {[0, 1].map((layer) => (
+        <motion.span
+          key={layer}
+          aria-hidden
+          animate={{ scale: [1, 1.9], opacity: [0.7, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: layer * 1 }}
+          style={{ color: layer === 0 ? "#7c5cff" : "#22d3ee" }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          {text}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "spectrum":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ filter: [\`hue-rotate(\${i * 42}deg)\`, \`hue-rotate(\${i * 42 + 360}deg)\`] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+          style={{ color: "#ff2d78" }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "jitter":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        skewX: [0, -14, 10, 0, 0, 0, 8, -6, 0],
+        x: [0, -4, 3, 0, 0, 0, 2, 0, 0],
+        opacity: [1, 1, 1, 1, 1, 1, 0.75, 1, 1],
+      }}
+      transition={{ duration: 1.9, repeat: Infinity, ease: "linear" }}
+      className="text-2xl font-black tracking-widest text-white sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "anaglyph":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        textShadow: [
+          "0 0 0 #ff3355, 0 0 0 #33ddff",
+          "-6px 0 1px #ff3355, 6px 0 1px #33ddff",
+          "0 0 0 #ff3355, 0 0 0 #33ddff",
+        ],
+      }}
+      transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+      className="text-2xl font-black tracking-widest text-white sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "flap":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex items-center justify-center gap-1 font-mono text-2xl font-bold text-white sm:text-3xl" style={{ perspective: "400px" }}>
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ rotateX: [0, -88, 0, -25, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.12 }}
+          style={{
+            display: "grid",
+            placeItems: "center",
+            width: "1.4em",
+            height: "1.8em",
+            background: "linear-gradient(rgba(255,255,255,0.12) 0 49%, rgba(255,255,255,0.06) 51% 100%)",
+            borderRadius: "4px",
+            transformOrigin: "center",
+          }}
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "elastic":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        scaleX: [1, 1.28, 0.78, 1.12, 0.96, 1.02, 1],
+        scaleY: [1, 0.72, 1.24, 0.9, 1.05, 0.98, 1],
+      }}
+      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+      className="text-2xl font-black tracking-widest text-[#22d3ee] sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "spotlight":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="text-2xl font-black tracking-widest sm:text-3xl">
+      <motion.span
+        animate={{ backgroundPosition: ["100% 0", "0% 0"] }}
+        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
+        style={{
+          background: "radial-gradient(3.5ch 100% at 50% 50%, #fff 20%, rgba(255,255,255,0.12) 75%)",
+          backgroundSize: "300% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+        className="inline-block"
+      >
+        {text}
+      </motion.span>
+    </div>
+  );
+}`;
+      break;
+
+    case "ember":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        textShadow: [
+          "0 -2px 6px #ffab40, 0 -6px 14px #ff6d00, 0 -12px 28px #dd2c00, 0 -20px 44px rgba(213,0,0,0.55)",
+          "0 -3px 8px #ffc46b, 0 -9px 20px #ff8f1f, 0 -18px 38px #ff3d00, 0 -30px 60px rgba(213,0,0,0.8)",
+          "0 -2px 6px #ffab40, 0 -6px 14px #ff6d00, 0 -12px 28px #dd2c00, 0 -20px 44px rgba(213,0,0,0.55)",
+        ],
+      }}
+      transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+      className="text-2xl font-black tracking-widest sm:text-3xl"
+      style={{ color: "#ffd9a0" }}
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "melt":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-black tracking-widest text-[#ec4899] sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{
+            scaleY: [1, 1.55, 1],
+            scaleX: [1, 0.92, 1],
+            y: [0, 7, 0],
+            filter: ["blur(0px)", "blur(1.5px)", "blur(0px)"],
+          }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeIn", delay: i * 0.22 }}
+          className="inline-block origin-top"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "heartbeat":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      animate={{
+        scale: [1, 1.14, 1, 1.18, 1],
+        textShadow: [
+          "0 0 0 transparent",
+          "0 0 18px rgba(236,72,153,0.65)",
+          "0 0 0 transparent",
+          "0 0 26px rgba(236,72,153,0.8)",
+          "0 0 0 transparent",
+        ],
+      }}
+      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", times: [0, 0.14, 0.28, 0.42, 0.7] }}
+      className="text-2xl font-black tracking-widest text-[#ec4899] sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+
+    case "marker":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative text-2xl font-bold tracking-wider text-white sm:text-3xl">
+      <motion.span
+        animate={{ backgroundSize: ["0% 46%", "100% 46%", "0% 46%"] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          background: "linear-gradient(100deg, rgba(124,92,255,0.85), rgba(124,92,255,0.6))",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "0 62%",
+          paddingBottom: "2px",
+        }}
+        className="inline"
+      >
+        {text}
+      </motion.span>
+    </div>
+  );
+}`;
+      break;
+
+    case "hologram":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative text-2xl font-black tracking-widest sm:text-3xl" style={{ isolation: "isolate" }}>
+      <motion.span
+        animate={{ y: [2, -4, 2], skewX: [0, -3, 0], filter: ["brightness(1)", "brightness(1.35)", "brightness(1)"] }}
+        transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+        style={{ color: "rgba(34,211,238,0.72)", textShadow: "0 0 6px rgba(34,211,238,0.6), 0 0 22px rgba(34,211,238,0.45)" }}
+        className="relative z-10 block"
+      >
+        {text}
+      </motion.span>
+      <span
+        aria-hidden
+        className="absolute inset-0 text-[#7c5cff] opacity-50"
+        style={{ clipPath: "inset(0 0 52% 0)" }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}`;
+      break;
+
+    case "kinetic":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-wide sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ y: [0, -18, 14, 0], rotate: [0, -9, 7, 0] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: [0.2, 0.8, 0.2, 1], delay: i * 0.08 }}
+          style={{ color: i % 3 === 0 ? "#ec4899" : i % 3 === 1 ? "#22d3ee" : "#fff" }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "blackout":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative text-2xl font-black tracking-widest text-white sm:text-3xl" style={{ padding: "0.28em 0.12em" }}>
+      <span>{text}</span>
+      <motion.div
+        animate={{ scaleX: [0, 0, 1, 1, 0.38, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear", times: [0, 0.19, 0.2, 0.58, 0.64, 1] }}
+        className="absolute left-0 right-0 top-0 h-[44%] origin-left bg-white"
+        style={{ boxShadow: "0 0 0 1px rgba(124,92,255,0.45)" }}
+      />
+      <motion.div
+        animate={{ scaleX: [0, 0, 1, 1, 0.38, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear", times: [0, 0.19, 0.2, 0.58, 0.64, 1], delay: 0.28 }}
+        className="absolute bottom-0 left-0 right-0 h-[44%] origin-right bg-white"
+        style={{ boxShadow: "0 0 0 1px rgba(124,92,255,0.45)" }}
+      />
+    </div>
+  );
+}`;
+      break;
+
+    case "magnetic":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{
+            x: [0, (3 - i) * 2, (i - 3) * 3, 0],
+            scale: [1, 1.12, 0.96, 1],
+          }}
+          transition={{ duration: 2.7, repeat: Infinity, ease: "easeInOut", delay: i * 0.07 }}
+          style={{ color: i % 2 === 0 ? "#22d3ee" : "#fff" }}
+          className="inline-block"
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "pendulum":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl" style={{ perspective: "400px" }}>
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{ rotate: [10, -10, 10] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: i * -0.12 }}
+          style={{ color: i % 2 === 0 ? "#22d3ee" : "#fff", transformOrigin: "50% -80%", display: "inline-block" }}
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "smoke":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  const chars = text.split("");
+  return (
+    <div className="flex justify-center text-2xl font-bold tracking-widest text-white sm:text-3xl">
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          animate={{
+            y: [0, 0, -22, 10, 0],
+            rotate: [0, 0, 14, 0, 0],
+            scale: [1, 1, 1.45, 0.8, 1],
+            opacity: [1, 1, 0, 0, 1],
+            filter: ["blur(0px)", "blur(0px)", "blur(7px)", "blur(4px)", "blur(0px)"],
+          }}
+          transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.16 }}
+          style={{ color: i % 2 === 0 ? "#7c5cff" : "#22d3ee", display: "inline-block" }}
+        >
+          {ch === " " ? "\\u00A0" : ch}
+        </motion.span>
+      ))}
+    </div>
+  );
+}`;
+      break;
+
+    case "scanner":
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <div className="relative overflow-hidden text-2xl font-black tracking-widest sm:text-3xl">
+      <motion.span
+        animate={{ backgroundPosition: ["100% 0", "0% 0"] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
+        style={{
+          background: "linear-gradient(90deg, rgba(255,255,255,0.18) 0 40%, #fff 50%, rgba(255,255,255,0.18) 60% 100%)",
+          backgroundSize: "300% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+        className="inline-block"
+      >
+        {text}
+      </motion.span>
+      <motion.div
+        animate={{ left: ["0%", "100%"] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
+        className="pointer-events-none absolute bottom-[-6px] top-[-6px] w-[3px] bg-[#22d3ee]"
+        style={{ boxShadow: "0 0 14px #22d3ee", transform: "translateX(-100%)" }}
+      />
+    </div>
+  );
+}`;
+      break;
+
+    default:
+      body = `
+export function ${effectName}Effect({ text = ${safeText} }: { text?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="text-center text-2xl font-bold tracking-tight text-white sm:text-3xl"
+    >
+      {text}
+    </motion.div>
+  );
+}`;
+      break;
+  }
+
+  return `// ${template.name} — TasteLoop Animation Vocabulary
+"use client";
+
+${reactImport}
+${motionImport}
+${body}
+
+export default ${effectName}Effect;
+`;
+}
+
+function generateComponentCode(
+  type: "text-effect" | "gallery" | "entrance",
+  data: {
+    template?: TextEffectTemplate;
+    item?: AnimItem;
+    textOptions?: TextOptions;
+    galleryOptions?: GalleryOptions;
+    promptText: string;
+  }
+): string {
+  if (type === "text-effect" && data.template) {
+    const t = data.template;
+    const textVal = data.textOptions?.text || t.defaultText;
+    const effectName = t.name.replace(/[^a-zA-Z0-9]/g, "");
+
+    return getFullTextEffectCode(t.animationTextType, effectName, textVal, t);
+  }
+
+  if (type === "gallery" && data.item) {
+    const item = data.item;
+    const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+
+    return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
+
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export interface GallerySlide {
+  src: string;
+  alt: string;
+}
+
+export function ${compName}Gallery({
+  slides = [
+    { src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80", alt: "Slide 1" },
+    { src: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=600&q=80", alt: "Slide 2" },
+    { src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80", alt: "Slide 3" },
+  ],
+  cardWidth = ${data.galleryOptions?.cardWidth ?? 100},
+  cardHeight = ${data.galleryOptions?.cardHeight ?? 150},
+  gap = ${data.galleryOptions?.gap ?? 16},
+  borderRadius = ${data.galleryOptions?.borderRadius ?? 12},
+}: {
+  slides?: GallerySlide[];
+  cardWidth?: number;
+  cardHeight?: number;
+  gap?: number;
+  borderRadius?: number;
+}) {
+  return (
+    <div className="relative flex items-center justify-center min-h-[400px] w-full bg-[#0d0c14] overflow-hidden p-8 rounded-2xl border border-white/10">
+      <div className="flex gap-4 overflow-x-auto p-4">
+        {slides.map((slide, idx) => (
+          <motion.div
+            key={idx}
+            whileHover={{ scale: 1.05 }}
+            style={{ width: cardWidth, height: cardHeight, borderRadius }}
+            className="shrink-0 overflow-hidden border border-white/10 shadow-2xl bg-white/5"
+          >
+            <img src={slide.src} alt={slide.alt} className="w-full h-full object-cover" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default ${compName}Gallery;
+`;
+  }
+
+  if (data.item) {
+    const item = data.item;
+    const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+
+    return `// ${item.name} — TasteLoop Motion Component
+// Category: ${item.category}
+
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Animation({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="p-6 rounded-2xl bg-white/[0.04] border border-white/10 text-white"
+    >
+      {children || <div className="p-4 text-center font-mono text-sm">${item.name} Motion Demo</div>}
+    </motion.div>
+  );
+}
+
+export default ${compName}Animation;
+`;
+  }
+
+  return `// Component Source Code\n// ${data.promptText}`;
+}
+
+function buildCopyText(option: CopyOption, promptText: string, codeText?: string): string {
+  switch (option) {
+    case "code":
+      return codeText || promptText;
+    case "framer":
+      return `// Framer component prompt\n// Paste this prompt into Framer's AI code editor\n\n${promptText}`;
+    case "mcp":
+    default:
+      return `// MCP Tool Instruction\n// Paste the prompt into your agent.\n\n${promptText}`;
+  }
+}
+
+function CopyModal({
+  open,
+  onClose,
+  promptText,
+  codeText,
+}: {
+  open: boolean;
+  onClose: () => void;
+  promptText: string;
+  codeText?: string;
+}) {
+  const [selected, setSelected] = useState<CopyOption>("mcp");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success">("idle");
+
+  useEffect(() => {
+    if (!open) {
+      setCopyStatus("idle");
+      setSelected("mcp");
+    }
+  }, [open]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  async function handleCopy() {
+    const text = buildCopyText(selected, promptText, codeText);
+    const ok = await copyText(text);
+    if (ok) {
+      setCopyStatus("success");
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#12111c] shadow-2xl"
+          >
+            {copyStatus === "success" ? (
+              /* Success View matching screenshot */
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-400 bg-emerald-500/10 text-emerald-400">
+                  <Check className="h-7 w-7 stroke-[2.5]" />
+                </div>
+                <h2 className="font-mono text-xl font-bold tracking-tight text-white mb-2">
+                  {selected === "code" ? "Code copied" : "Prompt copied"}
+                </h2>
+                <p className="mb-8 font-mono text-sm leading-relaxed text-white/50 max-w-xs">
+                  {selected === "code"
+                    ? "The component code is on your clipboard. Paste it into your project and customize it."
+                    : "The prompt instructions are on your clipboard. Paste it into your agent."}
+                </p>
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-xl bg-white py-3.5 font-mono text-sm font-semibold text-[#0d0c14] transition hover:bg-white/90"
+                >
+                  Got it
+                </button>
+              </div>
+            ) : (
+              /* Selection View */
+              <>
+                <div className="flex items-start justify-between p-6 pb-4">
+                  <div>
+                    <h2 className="font-mono text-xl font-bold tracking-tight text-white">Get this component</h2>
+                    <p className="mt-1 text-sm leading-relaxed text-white/50">
+                      Choose your preferred workflow to instantly use this component in your project.
+                    </p>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="ml-4 shrink-0 rounded-lg p-1.5 text-white/40 transition hover:bg-white/8 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-2 px-6">
+                  {COPY_OPTIONS.map((opt) => {
+                    const on = selected === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSelected(opt.id)}
+                        className={`group flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
+                          on
+                            ? "border-white/25 bg-white/[0.06]"
+                            : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                            on ? "bg-white/15 text-white" : "bg-white/8 text-white/50"
+                          }`}
+                        >
+                          {opt.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-mono text-sm font-semibold ${on ? "text-white" : "text-white/70"}`}>
+                            {opt.label}
+                            {opt.id === "mcp" && (
+                              <Info className="ml-1.5 inline h-3.5 w-3.5 text-white/30" />
+                            )}
+                          </p>
+                          <p className="mt-0.5 text-xs leading-snug text-white/40">{opt.description}</p>
+                        </div>
+                        <div
+                          className={`h-5 w-5 shrink-0 rounded-full border-2 transition ${
+                            on ? "border-white bg-white" : "border-white/30 bg-transparent"
+                          }`}
+                        >
+                          {on && (
+                            <div className="h-full w-full rounded-full scale-[0.45] bg-[#141320]" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <AnimatePresence>
+                  {selected === "mcp" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="overflow-hidden px-6 pt-3"
+                    >
+                      <div className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.025] px-4 py-2.5 text-xs text-white/50">
+                        <Info className="h-3.5 w-3.5 shrink-0 text-white/40" />
+                        <span>
+                          Paste the prompt into your agent.{" "}
+                          <span className="underline underline-offset-2 cursor-pointer hover:text-white/70 transition">Installation docs</span>
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="p-6 pt-4">
+                  <button
+                    onClick={handleCopy}
+                    className="flex w-full items-center justify-center rounded-xl bg-white py-3.5 font-mono text-sm font-semibold text-[#0d0c14] transition hover:bg-white/90"
+                  >
+                    Click to copy
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ─── Entrance scene labels ─────────────────────────────────────────────────────
+
 const ENTRANCE_SCENE: Record<string, string> = {
   "fade-in": "an upgrade modal",
   "slide-in": "a notification panel",
@@ -649,14 +1761,13 @@ function EntranceExpandedDetail({
   item: AnimItem;
   onClose: () => void;
 }) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
   const reduce = useReducedMotion();
   const text = fullEntrancePrompt(item);
   const chips = item.use ?? USE_BY_CAT[item.category] ?? [];
 
   useEffect(() => {
-    setCopyStatus("idle");
     setReplayKey((k) => k + 1);
   }, [item]);
 
@@ -666,10 +1777,9 @@ function EntranceExpandedDetail({
     return () => clearInterval(id);
   }, [reduce, item.category]);
 
-  async function copy() {
-    setCopyStatus((await copyText(text)) ? "success" : "error");
-    setTimeout(() => setCopyStatus("idle"), 2200);
-  }
+  const codeText = useMemo(() => {
+    return generateComponentCode("entrance", { item, promptText: text });
+  }, [item, text]);
 
   return (
     <motion.div
@@ -679,6 +1789,7 @@ function EntranceExpandedDetail({
       transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={text} codeText={codeText} />
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -694,15 +1805,11 @@ function EntranceExpandedDetail({
           Back
         </button>
         <button
-          onClick={copy}
+          onClick={() => setCopyModalOpen(true)}
           className="inline-flex items-center gap-2 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-2 text-sm font-medium text-[#a78bfa] transition hover:bg-[#7c5cff]/20"
         >
-          {copyStatus === "success" ? (
-            <Check className="h-4 w-4 text-emerald-400" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copyStatus === "success" ? "Copied!" : "Copy Prompt"}
+          <Copy className="h-4 w-4" />
+          Copy
         </button>
       </motion.div>
 
@@ -798,7 +1905,7 @@ function GalleryExpandedDetail({
   item: AnimItem;
   onClose: () => void;
 }) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
   const defaultOpts =
     DEFAULT_GALLERY_OPTIONS[item.variant] ??
@@ -809,7 +1916,6 @@ function GalleryExpandedDetail({
   const reduce = useReducedMotion();
 
   useEffect(() => {
-    setCopyStatus("idle");
     setReplayKey((k) => k + 1);
     setGalleryOptions(
       DEFAULT_GALLERY_OPTIONS[item.variant] ??
@@ -866,10 +1972,9 @@ function GalleryExpandedDetail({
     return `${item.prompt}${customSuffix}\n\nPattern: ${item.name}\nCategory: Gallery Animations`;
   }, [item, galleryOptions, defaultOpts]);
 
-  async function copy() {
-    setCopyStatus((await copyText(promptText)) ? "success" : "error");
-    setTimeout(() => setCopyStatus("idle"), 2200);
-  }
+  const codeText = useMemo(() => {
+    return generateComponentCode("gallery", { item, galleryOptions, promptText });
+  }, [item, galleryOptions, promptText]);
 
   return (
     <motion.div
@@ -881,6 +1986,7 @@ function GalleryExpandedDetail({
       }
       className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={promptText} codeText={codeText} />
       {/* Top Bar */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -897,15 +2003,11 @@ function GalleryExpandedDetail({
           Back
         </button>
         <button
-          onClick={copy}
+          onClick={() => setCopyModalOpen(true)}
           className="inline-flex items-center gap-2 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-2 text-sm font-medium text-[#a78bfa] transition hover:bg-[#7c5cff]/20"
         >
-          {copyStatus === "success" ? (
-            <Check className="h-4 w-4 text-emerald-400" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copyStatus === "success" ? "Copied!" : "Copy Prompt"}
+          <Copy className="h-4 w-4" />
+          Copy
         </button>
       </motion.div>
 
@@ -1082,7 +2184,7 @@ function ExpandedDetail({
   template: TextEffectTemplate;
   onClose: () => void;
 }) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
   const [textOptions, setTextOptions] = useState<TextOptions>({
     ...DEFAULT_TEXT_OPTIONS,
@@ -1119,7 +2221,6 @@ function ExpandedDetail({
   }, [template, textOptions]);
 
   useEffect(() => {
-    setCopyStatus("idle");
     setReplayKey((k) => k + 1);
     setTextOptions({
       ...DEFAULT_TEXT_OPTIONS,
@@ -1132,17 +2233,16 @@ function ExpandedDetail({
     return () => clearInterval(id);
   }, []);
 
-  async function copy() {
-    setCopyStatus((await copyText(promptText)) ? "success" : "error");
-    setTimeout(() => setCopyStatus("idle"), 2200);
-  }
-
   const handleReset = () => {
     setTextOptions({
       ...DEFAULT_TEXT_OPTIONS,
       text: template.defaultText,
     });
   };
+
+  const codeText = useMemo(() => {
+    return generateComponentCode("text-effect", { template, textOptions, promptText });
+  }, [template, textOptions, promptText]);
 
   return (
     <motion.div
@@ -1152,6 +2252,7 @@ function ExpandedDetail({
       transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
     >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={promptText} codeText={codeText} />
       {/* ── Back button ── */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -1168,15 +2269,11 @@ function ExpandedDetail({
           Back
         </button>
         <button
-          onClick={copy}
+          onClick={() => setCopyModalOpen(true)}
           className="inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-400 transition hover:bg-pink-500/20"
         >
-          {copyStatus === "success" ? (
-            <Check className="h-4 w-4 text-emerald-400" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copyStatus === "success" ? "Copied!" : "Copy Prompt"}
+          <Copy className="h-4 w-4" />
+          Copy
         </button>
       </motion.div>
 
