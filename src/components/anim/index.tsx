@@ -5,6 +5,8 @@ import { EntranceDemo, TimingDemo, TransformDemo } from "./motionA";
 import { TransitionDemo, ScrollDemo, EasingDemo, SpringDemo } from "./motionB";
 import { LoopDemo, PolishDemo, InteractionDemo, PerfDemo, PrincipleDemo } from "./motionC";
 import { GalleryDemo } from "./gallery";
+import { BorderDemo, ButtonDemo } from "./bordersAndButtons";
+import { ImageDemo, CursorDemo, ElementsDemo, BackgroundDemo, AnimationsDemo } from "./imageAndCursor";
 
 type Family = ComponentType<{ variant: string; options?: any }>;
 
@@ -22,6 +24,13 @@ const FAMILIES: Record<string, Family> = {
   perf: PerfDemo,
   principle: PrincipleDemo,
   gallery: GalleryDemo,
+  border: BorderDemo,
+  button: ButtonDemo,
+  image: ImageDemo,
+  cursor: CursorDemo,
+  elements: ElementsDemo,
+  background: BackgroundDemo,
+  animations: AnimationsDemo,
 };
 
 export function AnimDemo({ demo, variant, options }: { demo: string; variant: string; options?: any }) {

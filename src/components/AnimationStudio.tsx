@@ -16,6 +16,8 @@ import {
   type TextOptions,
 } from "./anim/TextOptionsPanel";
 import { GalleryOptionsPanel } from "./anim/GalleryOptionsPanel";
+import { BorderOptionsPanel, DEFAULT_BORDER_OPTIONS, type BorderOptions } from "./anim/BorderOptionsPanel";
+import { ButtonOptionsPanel, DEFAULT_BUTTON_OPTIONS, type ButtonOptions } from "./anim/ButtonOptionsPanel";
 import {
   DEFAULT_GALLERY_OPTIONS,
   BASE_DEFAULT_GALLERY_OPTIONS,
@@ -24,27 +26,8 @@ import {
 import { ANIM_ITEMS, ANIM_CATEGORIES, USE_BY_CAT, type AnimItem } from "@/data/animations";
 import { AnimDemo } from "@/components/anim";
 import { Stage } from "@/components/anim/Stage";
+import { ANIMATION_TYPES } from "@/content";
 
-// ─── Animation type config ────────────────────────────────────────────────────
-
-type AnimationType = { id: string; label: string; badge?: string };
-
-const ANIMATION_TYPES: AnimationType[] = [
-  { id: "gallery", label: "Gallery Animations" },
-  { id: "text-effect", label: "Text Effect" },
-  { id: "entrances", label: "Entrances & Exits" },
-  { id: "sequencing", label: "Sequencing & Timing" },
-  { id: "transforms", label: "Movement & Transforms" },
-  { id: "transitions", label: "Transitions Between States" },
-  { id: "scroll", label: "Scroll" },
-  { id: "feedback", label: "Feedback & Interaction" },
-  { id: "easing", label: "Easing" },
-  { id: "spring", label: "Spring Animations" },
-  { id: "looping", label: "Looping & Ambient" },
-  { id: "polish", label: "Polish & Effects" },
-  { id: "performance", label: "Performance" },
-  { id: "principles", label: "Principles to Know" },
-];
 
 // ─── Entrances color ──────────────────────────────────────────────────────────
 
@@ -339,14 +322,53 @@ export function AnimationStudio() {
         key: "slug",
         getProps: (x: AnimItem) => ({ item: x }),
       }
-      : {
-        items: ANIM_ITEMS.filter((a) => a.category === activeType),
-        Card: EntranceCard as any,
-        Detail: EntranceExpandedDetail as any,
-        selected: selectedAnimItem,
-        key: "slug",
-        getProps: (x: AnimItem) => ({ item: x }),
-      };
+      : activeType === "border"
+        ? {
+          items: ANIM_ITEMS.filter((a) => a.category === activeType),
+          Card: EntranceCard as any,
+          Detail: BorderExpandedDetail as any,
+          selected: selectedAnimItem,
+          key: "slug",
+          getProps: (x: AnimItem) => ({ item: x }),
+        }
+        : activeType === "button"
+          ? {
+            items: ANIM_ITEMS.filter((a) => a.category === activeType),
+            Card: EntranceCard as any,
+            Detail: ButtonExpandedDetail as any,
+            selected: selectedAnimItem,
+            key: "slug",
+            getProps: (x: AnimItem) => ({ item: x }),
+          }
+          : activeType === "animations"
+            ? {
+              items: ANIM_ITEMS.filter(
+                (a) =>
+                  a.category === "animations" ||
+                  a.category === "entrances" ||
+                  a.category === "sequencing" ||
+                  a.category === "transforms" ||
+                  a.category === "transitions" ||
+                  a.category === "scroll" ||
+                  a.category === "spring" ||
+                  a.category === "looping" ||
+                  a.category === "polish" ||
+                  a.category === "feedback"
+              ),
+              Card: EntranceCard as any,
+              Detail: EntranceExpandedDetail as any,
+              selected: selectedAnimItem,
+              key: "slug",
+              getProps: (x: AnimItem) => ({ item: x }),
+            }
+            : {
+              items: ANIM_ITEMS.filter((a) => a.category === activeType),
+              Card: EntranceCard as any,
+              Detail: EntranceExpandedDetail as any,
+              selected: selectedAnimItem,
+              key: "slug",
+              getProps: (x: AnimItem) => ({ item: x }),
+            };
 
   return (
     <div className="block min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
@@ -1390,6 +1412,335 @@ export default ${effectName}Effect;
 `;
 }
 
+function getFullBorderCode(variant: string, name: string): string {
+  const compName = name.replace(/[^a-zA-Z0-9]/g, "");
+
+  switch (variant) {
+    case "glow":
+      return `// ${name} — TasteLoop Border Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Border({ children }: { children?: React.ReactNode }) {
+  return (
+    <div className="relative flex min-h-[200px] w-full max-w-md items-center justify-center rounded-2xl border border-white/10 bg-[#12111c] overflow-hidden p-8">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-[-100%] origin-center bg-[conic-gradient(from_0deg,transparent_0_300deg,#7c5cff_330deg,#22d3ee_360deg)] opacity-70"
+      />
+      <div className="absolute inset-[1px] rounded-2xl bg-[#0d0c14] flex items-center justify-center p-6 text-center text-white">
+        {children || <span className="font-mono text-sm">Glowing Border Beam</span>}
+      </div>
+    </div>
+  );
+}
+
+export default ${compName}Border;
+`;
+
+    case "pulse":
+      return `// ${name} — TasteLoop Border Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Border({ children }: { children?: React.ReactNode }) {
+  return (
+    <motion.div
+      animate={{
+        boxShadow: [
+          "0 0 0 1px rgba(34,211,238,0.2), 0 0 10px rgba(34,211,238,0.1)",
+          "0 0 0 1px rgba(34,211,238,0.8), 0 0 24px rgba(34,211,238,0.4)",
+          "0 0 0 1px rgba(34,211,238,0.2), 0 0 10px rgba(34,211,238,0.1)",
+        ],
+      }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      className="flex min-h-[200px] w-full max-w-md items-center justify-center rounded-2xl border border-[#22d3ee]/40 bg-[#12111c] p-8 text-center text-white"
+    >
+      {children || <span className="font-mono text-sm text-[#22d3ee]">Pulse Neon Ring</span>}
+    </motion.div>
+  );
+}
+
+export default ${compName}Border;
+`;
+
+    case "dash":
+      return `// ${name} — TasteLoop Border Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Border({ children }: { children?: React.ReactNode }) {
+  return (
+    <div className="relative flex min-h-[200px] w-full max-w-md items-center justify-center rounded-2xl bg-[#12111c] p-8 text-center text-white">
+      <svg className="absolute inset-0 h-full w-full rounded-2xl overflow-visible">
+        <motion.rect
+          x="1"
+          y="1"
+          width="99%"
+          height="99%"
+          rx="16"
+          fill="none"
+          stroke="#a78bfa"
+          strokeWidth="2"
+          strokeDasharray="8 6"
+          animate={{ strokeDashoffset: [0, -28] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        />
+      </svg>
+      <div className="relative z-10">
+        {children || <span className="font-mono text-sm text-[#a78bfa]">Marching Dashes</span>}
+      </div>
+    </div>
+  );
+}
+
+export default ${compName}Border;
+`;
+
+    case "corner":
+      return `// ${name} — TasteLoop Border Component
+"use client";
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Border({ children }: { children?: React.ReactNode }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="relative flex min-h-[200px] w-full max-w-md cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-[#12111c] p-8 text-center text-white"
+    >
+      <motion.span
+        animate={hovered ? { x: -2, y: -2, opacity: 1 } : { x: 4, y: 4, opacity: 0.4 }}
+        transition={{ duration: 0.2 }}
+        className="absolute top-3 left-3 h-4 w-4 border-t-2 border-l-2 border-[#22d3ee]"
+      />
+      <motion.span
+        animate={hovered ? { x: 2, y: -2, opacity: 1 } : { x: -4, y: 4, opacity: 0.4 }}
+        transition={{ duration: 0.2 }}
+        className="absolute top-3 right-3 h-4 w-4 border-t-2 border-r-2 border-[#22d3ee]"
+      />
+      <motion.span
+        animate={hovered ? { x: -2, y: 2, opacity: 1 } : { x: 4, y: -4, opacity: 0.4 }}
+        transition={{ duration: 0.2 }}
+        className="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[#22d3ee]"
+      />
+      <motion.span
+        animate={hovered ? { x: 2, y: 2, opacity: 1 } : { x: -4, y: -4, opacity: 0.4 }}
+        transition={{ duration: 0.2 }}
+        className="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[#22d3ee]"
+      />
+      <div className="relative z-10">
+        {children || <span className="font-mono text-sm text-white/70">Corner Bracket Lock</span>}
+      </div>
+    </div>
+  );
+}
+
+export default ${compName}Border;
+`;
+
+    case "shimmer":
+    default:
+      return `// ${name} — TasteLoop Border Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Border({ children }: { children?: React.ReactNode }) {
+  return (
+    <div className="relative flex min-h-[200px] w-full max-w-md items-center justify-center rounded-2xl border border-white/15 bg-[#12111c] overflow-hidden p-8 text-center text-white">
+      <motion.div
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
+        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+      />
+      <div className="relative z-10">
+        {children || <span className="font-mono text-sm text-white/80">Shimmer Sweep Border</span>}
+      </div>
+    </div>
+  );
+}
+
+export default ${compName}Border;
+`;
+  }
+}
+
+function getFullButtonCode(variant: string, name: string): string {
+  const compName = name.replace(/[^a-zA-Z0-9]/g, "");
+
+  switch (variant) {
+    case "magnetic":
+      return `// ${name} — TasteLoop Button Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Button({ label = "Magnetic Glow CTA" }: { label?: string }) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="relative rounded-xl border border-[#7c5cff]/40 bg-[#7c5cff]/15 px-6 py-3 font-mono text-sm font-bold text-[#a78bfa] shadow-lg transition hover:bg-[#7c5cff]/25"
+    >
+      <span>{label}</span>
+    </motion.button>
+  );
+}
+
+export default ${compName}Button;
+`;
+
+    case "shimmer":
+      return `// ${name} — TasteLoop Button Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Button({ label = "Shimmer Wave Button" }: { label?: string }) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      className="relative overflow-hidden rounded-xl border border-white/20 bg-gradient-to-r from-[#7c5cff] to-[#22d3ee] px-6 py-3 font-mono text-sm font-bold text-white shadow-xl"
+    >
+      <motion.div
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"
+      />
+      <span className="relative z-10">{label}</span>
+    </motion.button>
+  );
+}
+
+export default ${compName}Button;
+`;
+
+    case "pulse":
+      return `// ${name} — TasteLoop Button Component
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Button({ label = "Heartbeat Pulse CTA" }: { label?: string }) {
+  return (
+    <motion.button
+      animate={{
+        scale: [1, 1.05, 1],
+        boxShadow: [
+          "0 0 0 0 rgba(236, 72, 153, 0.4)",
+          "0 0 0 12px rgba(236, 72, 153, 0)",
+          "0 0 0 0 rgba(236, 72, 153, 0.4)",
+        ],
+      }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      className="rounded-xl border border-pink-500/40 bg-pink-500/20 px-6 py-3 font-mono text-sm font-bold text-pink-400"
+    >
+      {label}
+    </motion.button>
+  );
+}
+
+export default ${compName}Button;
+`;
+
+    case "fill":
+      return `// ${name} — TasteLoop Button Component
+"use client";
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Button({ label = "Liquid Fill Button" }: { label?: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="relative overflow-hidden rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-3 font-mono text-sm font-bold text-emerald-400 transition"
+    >
+      <motion.div
+        animate={hovered ? { y: 0 } : { y: "100%" }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="absolute inset-0 bg-emerald-500"
+      />
+      <span className={\`relative z-10 transition \${hovered ? "text-black" : "text-emerald-400"}\`}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+export default ${compName}Button;
+`;
+
+    case "particle":
+    default:
+      return `// ${name} — TasteLoop Button Component
+"use client";
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+
+export function ${compName}Button({ label = "Particle Burst Button" }: { label?: string }) {
+  const [active, setActive] = useState(false);
+
+  function handleClick() {
+    setActive(true);
+    setTimeout(() => setActive(false), 600);
+  }
+
+  return (
+    <div className="relative inline-block">
+      {active && (
+        <>
+          {[0, 60, 120, 180, 240, 300].map((deg, i) => (
+            <motion.span
+              key={i}
+              initial={{ scale: 0, opacity: 1, x: 0, y: 0 }}
+              animate={{
+                scale: [1, 0],
+                opacity: [1, 0],
+                x: Math.cos((deg * Math.PI) / 180) * 28,
+                y: Math.sin((deg * Math.PI) / 180) * 28,
+              }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="absolute top-1/2 left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400"
+            />
+          ))}
+        </>
+      )}
+      <motion.button
+        onClick={handleClick}
+        whileTap={{ scale: 0.9 }}
+        className="rounded-xl border border-cyan-500/40 bg-cyan-500/20 px-6 py-3 font-mono text-sm font-bold text-cyan-300"
+      >
+        {label}
+      </motion.button>
+    </div>
+  );
+}
+
+export default ${compName}Button;
+`;
+  }
+}
+
 function generateComponentCode(
   type: "text-effect" | "gallery" | "entrance",
   data: {
@@ -1466,6 +1817,12 @@ export default ${compName}Gallery;
 
   if (data.item) {
     const item = data.item;
+    if (item.category === "border") {
+      return getFullBorderCode(item.variant, item.name);
+    }
+    if (item.category === "button") {
+      return getFullButtonCode(item.variant, item.name);
+    }
     const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
 
     return `// ${item.name} — TasteLoop Motion Component
@@ -1614,16 +1971,14 @@ function CopyModal({
                       <button
                         key={opt.id}
                         onClick={() => setSelected(opt.id)}
-                        className={`group flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
-                          on
-                            ? "border-white/25 bg-white/[0.06]"
-                            : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
-                        }`}
+                        className={`group flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${on
+                          ? "border-white/25 bg-white/[0.06]"
+                          : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
+                          }`}
                       >
                         <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                            on ? "bg-white/15 text-white" : "bg-white/8 text-white/50"
-                          }`}
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${on ? "bg-white/15 text-white" : "bg-white/8 text-white/50"
+                            }`}
                         >
                           {opt.icon}
                         </div>
@@ -1637,9 +1992,8 @@ function CopyModal({
                           <p className="mt-0.5 text-xs leading-snug text-white/40">{opt.description}</p>
                         </div>
                         <div
-                          className={`h-5 w-5 shrink-0 rounded-full border-2 transition ${
-                            on ? "border-white bg-white" : "border-white/30 bg-transparent"
-                          }`}
+                          className={`h-5 w-5 shrink-0 rounded-full border-2 transition ${on ? "border-white bg-white" : "border-white/30 bg-transparent"
+                            }`}
                         >
                           {on && (
                             <div className="h-full w-full rounded-full scale-[0.45] bg-[#141320]" />
@@ -2372,6 +2726,280 @@ function ExpandedDetail({
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
                     AI Prompt
                   </p>
+                  <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
+                    {promptText}
+                  </pre>
+                </div>
+              </div>
+            }
+          />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Border Expanded Detail ──────────────────────────────────────────────────
+
+function BorderExpandedDetail({
+  item,
+  onClose,
+}: {
+  item: AnimItem;
+  onClose: () => void;
+}) {
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
+  const [borderOptions, setBorderOptions] = useState<BorderOptions>(DEFAULT_BORDER_OPTIONS);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    setReplayKey((k) => k + 1);
+    setBorderOptions(DEFAULT_BORDER_OPTIONS);
+  }, [item]);
+
+  const handleReset = () => setBorderOptions(DEFAULT_BORDER_OPTIONS);
+
+  const promptText = useMemo(() => {
+    return `${item.prompt}\n\nPattern: ${item.name}\nCategory: Borders & Frames`;
+  }, [item]);
+
+  const codeText = useMemo(() => {
+    return generateComponentCode("entrance", { item, promptText });
+  }, [item, promptText]);
+
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
+    >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={promptText} codeText={codeText} />
+      {/* Top Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
+      >
+        <button
+          onClick={onClose}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+        <button
+          onClick={() => setCopyModalOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-2 text-sm font-medium text-[#a78bfa] transition hover:bg-[#7c5cff]/20"
+        >
+          <Copy className="h-4 w-4" />
+          Copy
+        </button>
+      </motion.div>
+
+      {/* Split Layout */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        {/* Left — Live Stage */}
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
+          <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
+            <AnimatePresence mode="wait" initial={!reduce}>
+              <motion.div
+                key={`${item.slug}-${replayKey}`}
+                initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.99 }}
+                transition={reduce ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="flex h-full w-full items-center justify-center"
+              >
+                <AnimDemo demo={item.demo} variant={item.variant} options={borderOptions} />
+              </motion.div>
+            </AnimatePresence>
+          </Stage>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.15 }}
+            onClick={() => setReplayKey((k) => k + 1)}
+            className="absolute bottom-4 right-5 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
+          >
+            <RotateCw className="h-3 w-3" /> replay
+          </motion.button>
+        </div>
+
+        {/* Right — Border Controls Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
+          className="flex w-full flex-col overflow-y-auto p-6 lg:w-[420px] lg:shrink-0"
+        >
+          <BorderOptionsPanel
+            options={borderOptions}
+            onChange={setBorderOptions}
+            onReset={handleReset}
+            promptContent={
+              <div className="flex flex-col gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#a78bfa]">
+                    {item.name}
+                  </span>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    {item.name}
+                  </h2>
+                  <p className="mt-2 text-xs leading-relaxed text-white/50">
+                    {item.def}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Craft note</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/70">{item.tip}</p>
+                </div>
+                <div className="h-px bg-white/8" />
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">AI Prompt</p>
+                  <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
+                    {promptText}
+                  </pre>
+                </div>
+              </div>
+            }
+          />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Button Expanded Detail ───────────────────────────────────────────────────
+
+function ButtonExpandedDetail({
+  item,
+  onClose,
+}: {
+  item: AnimItem;
+  onClose: () => void;
+}) {
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
+  const [buttonOptions, setButtonOptions] = useState<ButtonOptions>(DEFAULT_BUTTON_OPTIONS);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    setReplayKey((k) => k + 1);
+    setButtonOptions(DEFAULT_BUTTON_OPTIONS);
+  }, [item]);
+
+  const handleReset = () => setButtonOptions(DEFAULT_BUTTON_OPTIONS);
+
+  const promptText = useMemo(() => {
+    return `${item.prompt}\n\nPattern: ${item.name}\nCategory: Button Animations`;
+  }, [item]);
+
+  const codeText = useMemo(() => {
+    return generateComponentCode("entrance", { item, promptText });
+  }, [item, promptText]);
+
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
+    >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={promptText} codeText={codeText} />
+      {/* Top Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
+      >
+        <button
+          onClick={onClose}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+        <button
+          onClick={() => setCopyModalOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/20"
+        >
+          <Copy className="h-4 w-4" />
+          Copy
+        </button>
+      </motion.div>
+
+      {/* Split Layout */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        {/* Left — Live Stage */}
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
+          <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
+            <AnimatePresence mode="wait" initial={!reduce}>
+              <motion.div
+                key={`${item.slug}-${replayKey}`}
+                initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.99 }}
+                transition={reduce ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="flex h-full w-full items-center justify-center"
+              >
+                <AnimDemo demo={item.demo} variant={item.variant} options={buttonOptions} />
+              </motion.div>
+            </AnimatePresence>
+          </Stage>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.15 }}
+            onClick={() => setReplayKey((k) => k + 1)}
+            className="absolute bottom-4 right-5 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
+          >
+            <RotateCw className="h-3 w-3" /> replay
+          </motion.button>
+        </div>
+
+        {/* Right — Button Controls Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
+          className="flex w-full flex-col overflow-y-auto p-6 lg:w-[420px] lg:shrink-0"
+        >
+          <ButtonOptionsPanel
+            options={buttonOptions}
+            onChange={setButtonOptions}
+            onReset={handleReset}
+            promptContent={
+              <div className="flex flex-col gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-400/80">
+                    {item.name}
+                  </span>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    {item.name}
+                  </h2>
+                  <p className="mt-2 text-xs leading-relaxed text-white/50">
+                    {item.def}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Craft note</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/70">{item.tip}</p>
+                </div>
+                <div className="h-px bg-white/8" />
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">AI Prompt</p>
                   <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
                     {promptText}
                   </pre>

@@ -72,3 +72,19 @@ export interface Category {
   blurb: string;
   accent: string; // tailwind gradient classes
 }
+
+
+type AnimationType = { id: string; label: string; badge?: string };
+
+export const ANIMATION_TYPES: AnimationType[] = [
+  { id: "gallery", label: "Gallery Animations" },
+  { id: "text-effect", label: "Text Effect" },
+  { id: "border", label: "Borders & Frames" },
+  { id: "button", label: "Button" },
+  { id: "image", label: "Image" },
+  { id: "cursor", label: "Cursor" },
+  { id: "elements", label: "Elements" },
+  { id: "animations", label: "Animations" },
+  { id: "background", label: "Background" },
+];
+

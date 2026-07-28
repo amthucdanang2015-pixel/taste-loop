@@ -40,9 +40,24 @@ export const USE_BY_CAT: Record<string, string[]> = {
   performance: ["Every animation", "Mobile", "Heavy scenes"],
   principles: ["Design reviews", "Motion systems", "Polish passes"],
   gallery: ["App Showcases", "Portfolios", "Image Carousels", "Product Cards"],
+  border: ["Card Borders", "Modal Highlights", "Focus Rings", "Feature Cards"],
+  button: ["Primary CTAs", "Form Submits", "Icon Buttons", "Action Bars"],
+  image: ["Hero Images", "Product Cards", "Portfolios", "Avatars"],
+  cursor: ["Interactive Canvas", "Hero Landing", "Custom Pointers", "Hover Glows"],
+  elements: ["Badges", "Accordions", "Floating Docks", "Toggles"],
+  animations: ["Page Transitions", "List Cascades", "3D Transforms", "Physics Spring"],
+  background: ["Hero Canvas", "Ambient Gradients", "Interactive Mesh", "Grid Patterns"],
 };
 
 export const ANIM_CATEGORIES: AnimCategory[] = [
+  { slug: "gallery", name: "Gallery Animations", blurb: "Interactive image, card, and showcase galleries." },
+  { slug: "border", name: "Borders & Frames", blurb: "Animated borders, glowing beams, and frame effects." },
+  { slug: "button", name: "Button", blurb: "Interactive CTA micro-interactions, ripples, and hover glows." },
+  { slug: "image", name: "Image", blurb: "Image masks, hover zooms, 3D card tilts, and focus dissolves." },
+  { slug: "cursor", name: "Cursor", blurb: "Custom cursor followers, magnetic pulls, and spotlight glow tracks." },
+  { slug: "elements", name: "Elements", blurb: "Floating badges, accordion expansions, action docks, and toggles." },
+  { slug: "animations", name: "Animations", blurb: "Entrance slide & fades, staggered lists, and physics springs." },
+  { slug: "background", name: "Background", blurb: "Aurora gradient meshes, marquee strips, and ambient light sweeps." },
   { slug: "entrances", name: "Entrances & Exits", blurb: "How elements appear and disappear." },
   { slug: "sequencing", name: "Sequencing & Timing", blurb: "Coordinating multiple elements or moments." },
   { slug: "transforms", name: "Movement & Transforms", blurb: "Changing position, size, or angle." },
@@ -55,12 +70,56 @@ export const ANIM_CATEGORIES: AnimCategory[] = [
   { slug: "polish", name: "Polish & Effects", blurb: "The small touches that separate good from great." },
   { slug: "performance", name: "Performance", blurb: "What keeps motion smooth instead of stuttering." },
   { slug: "principles", name: "Principles to Know", blurb: "Concepts that guide when and how to animate." },
-  { slug: "gallery", name: "Gallery Animations", blurb: "Interactive image, card, and showcase galleries." },
 ];
 
 const P = "Build it in Next.js + Tailwind with Motion (motion.dev). Keep it 60fps (transform/opacity only) and add a prefers-reduced-motion fallback.";
 
 export const ANIM_ITEMS: AnimItem[] = [
+  // ---------- Borders & Frames ----------
+  { slug: "border-glow", name: "Glowing Border Beam", category: "border", demo: "border", variant: "glow", def: "A sharp light beam sweeps continuously around a card border.", tip: "Uses a conic-gradient mask or moving gradient offset for a sleek cyber aesthetic.", prompt: `Animate a glowing gradient beam traveling around a rounded card border with linear rotation. ${P}` },
+  { slug: "border-pulse", name: "Pulse Neon Ring", category: "border", demo: "border", variant: "pulse", def: "A breathing glowing border that pulses gently.", tip: "Animate box-shadow blur and opacity on a continuous loop for status or focus.", prompt: `Animate a card border with a breathing neon glow box-shadow pulse (opacity 0.4->1, shadow 0 0 15px). ${P}` },
+  { slug: "border-dash", name: "Marching Dashes", category: "border", demo: "border", variant: "dash", def: "Dashed border line that moves continuously around the perimeter.", tip: "Animate stroke-dashoffset on SVG path for file dropzones and selection frames.", prompt: `Animate an SVG dashed border outline with stroke-dashoffset loop for interactive dropzones. ${P}` },
+  { slug: "border-corner", name: "Corner Bracket Lock", category: "border", demo: "border", variant: "corner", def: "Corner brackets expand and lock into position on hover or focus.", tip: "Animate 4 corner L-shapes scaling out from corners toward the edges.", prompt: `Animate 4 corner frame brackets expanding inward on focus to lock around an action card. ${P}` },
+  { slug: "border-shimmer", name: "Shimmer Sweep Border", category: "border", demo: "border", variant: "shimmer", def: "A subtle metallic shine sweeps across the card border.", tip: "Pass a shiny light gradient across border opacity for premium tier highlights.", prompt: `Animate a metallic light sweep moving diagonally across a dark card's border. ${P}` },
+
+  // ---------- Button Animations ----------
+  { slug: "button-magnetic", name: "Magnetic Glow CTA", category: "button", demo: "button", variant: "magnetic", def: "Button subtlely follows the cursor position with a liquid glow.", tip: "Pair a soft cursor-following spring with an inner radial highlight for main landing CTAs.", prompt: `Create a primary CTA button that pulls slightly toward mouse hover position with an internal glow dot. ${P}` },
+  { slug: "button-shimmer", name: "Shimmer Wave Button", category: "button", demo: "button", variant: "shimmer", def: "A bright light wave travels across the CTA text and background on interval.", tip: "Great for converting primary buttons. Run a light streak across every 3 seconds.", prompt: `Animate a primary button with a diagonal light streak sweeping across the background on a loop. ${P}` },
+  { slug: "button-pulse", name: "Heartbeat Pulse CTA", category: "button", demo: "button", variant: "pulse", def: "Button gently expands and glows to draw instant focus.", tip: "A subtle scale pulse (1->1.04->1) to capture attention without blocking user flow.", prompt: `Animate a CTA button scaling 1 -> 1.04 -> 1 with a expanding outer glow ring on interval. ${P}` },
+  { slug: "button-fill", name: "Liquid Fill Button", category: "button", demo: "button", variant: "fill", def: "Color liquid fills up the button from the bottom on hover.", tip: "Animate scale Y / background position on hover for a satisfying tactile feel.", prompt: `Animate a button background filling up smoothly from bottom to top on hover with custom easing. ${P}` },
+  { slug: "button-particle", name: "Particle Burst Button", category: "button", demo: "button", variant: "particle", def: "Sparkle particles burst outward from the button when clicked.", tip: "Trigger small floating particle icons on tap for rewarding micro-interactions.", prompt: `Animate sparkling particle elements bursting outwards around a button on click/tap. ${P}` },
+
+  // ---------- Image Animations ----------
+  { slug: "image-pixelated", name: "Pixel Dissolve Grid", category: "image", demo: "image", variant: "pixelated", def: "Pixelated grid overlay dissolves to reveal high-resolution photo on hover.", tip: "Grid overlay opacity drops to zero on hover for smooth focus effect.", prompt: `Create a pixelated image card where mouse hover dissolves pixel mask grid overlay to reveal sharp photography. ${P}` },
+  { slug: "image-liquid", name: "Liquid Wave Distortion", category: "image", demo: "image", variant: "liquid", def: "Interactive fluid distortion wave warping image surface.", tip: "Animate image scale, rotation, and hue-rotate on cursor interaction.", prompt: `Animate a fluid liquid image distortion warp wave effect on hover. ${P}` },
+  { slug: "image-reveal", name: "Pixelated Mask Wipe", category: "image", demo: "image", variant: "reveal", def: "An image is revealed smoothly with a sliding clip-path mask transition.", tip: "Use clip-path inset masking for editorial hero reveals.", prompt: `Animate an image reveal using clip-path inset from 100% to 0% over 0.7s ease-out. ${P}` },
+  { slug: "image-lens", name: "Heat Lens Magnifier", category: "image", demo: "image", variant: "lens", def: "Interactive magnifying lens circle following cursor movement.", tip: "Position zoomed image clone inside circular clip container tracking mouse X/Y.", prompt: `Animate a circular spotlight lens magnifier tracking mouse coordinates over an image. ${P}` },
+  { slug: "image-glitch", name: "Cyberpunk Glitch Shear", category: "image", demo: "image", variant: "glitch", def: "RGB splitting and horizontal glitch slices on mouse hover.", tip: "Layer clip-path slices with chromatic hue shifts.", prompt: `Animate a cyberpunk image glitch effect with RGB color shear on hover. ${P}` },
+  { slug: "image-zoom", name: "Parallax Hover Zoom", category: "image", demo: "image", variant: "zoom", def: "Image zooms smoothly inside its card frame on mouse hover.", tip: "Keep overflow hidden on container so image scales cleanly without overflowing.", prompt: `Create an image card where hover scales the img element 1.08x while keeping container overflow hidden. ${P}` },
+  { slug: "image-tilt", name: "3D Perspective Card Tilt", category: "image", demo: "image", variant: "tilt3d", def: "Image card tilts dynamically in 3D space tracking mouse movements.", tip: "Add subtle perspective and calculate rotateX/rotateY based on cursor position.", prompt: `Animate an image card with interactive 3D perspective tilt on cursor hover. ${P}` },
+  { slug: "image-beforeafter", name: "Split Image Slider", category: "image", demo: "image", variant: "beforeafter", def: "An interactive split slider comparing before and after image states.", tip: "Smooth drag handles for visual proof, portfolio work, and AI generation diffs.", prompt: `Build a split-screen before/after image comparison slider with interactive clip-path dragging. ${P}` },
+
+  // ---------- Cursor Animations ----------
+  { slug: "cursor-kinetic", name: "Kinetic Grid Dots", category: "cursor", demo: "cursor", variant: "kineticgrid", def: "Grid of glowing dots that react dynamically to cursor proximity.", tip: "Calculate euclidean distance between cursor and dots to scale and brighten nearby dots.", prompt: `Animate an interactive kinetic dot grid where dots expand and glow near cursor proximity. ${P}` },
+  { slug: "cursor-fluid", name: "Fluid Blob Trail", category: "cursor", demo: "cursor", variant: "fluidtrail", def: "Smooth fluid blob trail trailing mouse movement across canvas.", tip: "Render scaling trailing nodes along mouse trajectory.", prompt: `Create a fluid motion trail cursor effect with fading gradient blur bubbles. ${P}` },
+  { slug: "cursor-axis", name: "Axis Crosshair Pointer", category: "cursor", demo: "cursor", variant: "axiscursor", def: "Full-stage crosshair lines tracking cursor X and Y coordinates with position readouts.", tip: "Draw orthogonal guidelines with real-time coordinate badges.", prompt: `Animate crosshair axis lines following cursor position with coordinate readouts. ${P}` },
+  { slug: "cursor-user", name: "Multi-User Pointer Badges", category: "cursor", demo: "cursor", variant: "usercursor", def: "Simulated multi-user collaboration pointers with name badges.", tip: "Animate floating pointers with smooth spring physics.", prompt: `Animate collaborative user cursor pointers with color name badges following paths. ${P}` },
+  { slug: "cursor-click", name: "Click Shockwave Burst", category: "cursor", demo: "cursor", variant: "clickeffects", def: "Concentric shockwaves and particle bursts triggering on mouse click.", tip: "Spawn expanding ring keyframe animations on tap.", prompt: `Create ripple shockwave animations on mouse click position. ${P}` },
+  { slug: "cursor-magnetic", name: "Magnetic Cursor Pull", category: "cursor", demo: "cursor", variant: "magnetic", def: "Interactive elements dynamically pull towards cursor position when hovered.", tip: "Use spring physics to attract CTAs towards cursor position for tactile feedback.", prompt: `Animate a magnetic CTA button pulling towards cursor coordinates on mousemove with spring physics. ${P}` },
+  { slug: "cursor-spotlight", name: "Spotlight Track Lens", category: "cursor", demo: "cursor", variant: "spotlight", def: "Radial spotlight tracking cursor revealing dark background patterns.", tip: "Track relative mouse position and update radial-gradient background coordinates.", prompt: `Animate a subtle radial glow spotlight that follows the cursor on hover. ${P}` },
+
+  // ---------- Elements ----------
+  { slug: "elements-dock", name: "macOS Floating Action Dock", category: "elements", demo: "elements", variant: "dock", def: "Interactive action dock with magnifying icons based on cursor proximity curve.", tip: "Scale neighboring icons dynamically on hover.", prompt: `Build a macOS style floating action dock with spring icon magnification on hover. ${P}` },
+  { slug: "elements-blackhole", name: "Gravity Core Black Hole", category: "elements", demo: "elements", variant: "blackhole", def: "Swirling gravity core attracting surrounding elements.", tip: "Rotate dashed orbit rings continuously around dark central core.", prompt: `Animate a gravity black hole central core with rotating energy orbits. ${P}` },
+  { slug: "elements-juice", name: "Elastic Juice Spring", category: "elements", demo: "elements", variant: "juice", def: "Tactile spring bounce button with squish and stretch reaction.", tip: "Apply scale keyframes [1, 1.15, 1] with high spring stiffness.", prompt: `Create an elastic juice bounce button with spring scale feedback. ${P}` },
+  { slug: "elements-accordion", name: "Accordion Height Morph", category: "elements", demo: "elements", variant: "accordion", def: "Smooth expansion and collapse of content sections.", tip: "Animate height smoothly without hardcoding fixed pixel heights.", prompt: `Build an accordion expanding height with spring physics and content fade. ${P}` },
+  { slug: "elements-badge", name: "Pop Status Badge", category: "elements", demo: "elements", variant: "badge", def: "Micro badges bounce and pop into position when rendered.", tip: "Use spring overshoot for notifications, badges, and status pills.", prompt: `Animate status badges popping in with elastic spring scale overshoot. ${P}` },
+
+  // ---------- Background ----------
+  { slug: "bg-pixelcard", name: "Pixel Matrix Card", category: "background", demo: "background", variant: "pixelcard", def: "Interactive grid matrix where hovered pixel cells light up.", tip: "Light up grid items on hover with smooth color decay.", prompt: `Animate an interactive pixel matrix grid background lighting up on hover. ${P}` },
+  { slug: "bg-chromatic", name: "Chromatic Shader Wave", category: "background", demo: "background", variant: "chromatic", def: "Multi-layered gradient sine waves sweeping across background.", tip: "Animate background-position on blurred multi-color mesh gradient.", prompt: `Animate a sweeping chromatic shader mesh background with fluid color movement. ${P}` },
+  { slug: "bg-aurora", name: "Aurora Mesh Pulse", category: "background", demo: "background", variant: "aurora", def: "Soft ambient color mesh expanding and breathing in background.", tip: "Use multi-layered radial gradients with slow opacity oscillations.", prompt: `Animate glowing background aura mesh with slow breathing pulse. ${P}` },
+
   // ---------- Entrances & Exits ----------
   { slug: "fade-in", name: "Fade in / out", category: "entrances", demo: "entrance", variant: "fade", def: "An element appears or disappears by changing opacity.", tip: "The quietest entrance. ~200–300ms ease-out. Use when you don't want to draw attention to the motion itself.", prompt: `Animate an element fading in from opacity 0 to 1 over 250ms ease-out on mount, and fading out on exit. ${P}` },
   { slug: "slide-in", name: "Slide in", category: "entrances", demo: "entrance", variant: "slide", def: "An element enters by sliding in from off-screen.", tip: "Pair a small translate (16–40px) with a fade. Slide from the direction that matches where the element 'comes from'.", prompt: `Animate an element sliding in from 32px below with a fade (y:32→0, opacity:0→1), 400ms ease-out. ${P}` },
