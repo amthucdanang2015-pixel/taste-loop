@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import {
   OFFERS,
+  WORK_MODEL,
   offerHref,
   type Offer,
 } from "@/config/brand";
@@ -10,17 +11,45 @@ import { Reveal } from "@/components/Reveal";
 export function OfferGrid({
   headingLevel = "h3",
   className = "",
+  showOperatingModel = false,
 }: {
   headingLevel?: "h2" | "h3";
   className?: string;
+  showOperatingModel?: boolean;
 }) {
   return (
-    <div className={`grid gap-4 lg:grid-cols-2 ${className}`}>
-      {OFFERS.map((offer, index) => (
-        <Reveal key={offer.id} delay={index * 0.06}>
-          <OfferCard offer={offer} headingLevel={headingLevel} />
+    <div className={className}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {OFFERS.map((offer, index) => (
+          <Reveal key={offer.id} delay={index * 0.06}>
+            <OfferCard offer={offer} headingLevel={headingLevel} />
+          </Reveal>
+        ))}
+      </div>
+
+      {showOperatingModel ? (
+        <Reveal delay={0.12}>
+          <aside className="mt-5 grid gap-5 border-t border-line pt-5 md:grid-cols-2 md:gap-8">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-signal">
+                Protected capacity
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-white/48">
+                {WORK_MODEL.capacity} {WORK_MODEL.continuity}{" "}
+                {WORK_MODEL.ownership}
+              </p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-signal">
+                Deeper partnership
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-white/48">
+                {WORK_MODEL.partnership} {WORK_MODEL.partnershipPrompt}
+              </p>
+            </div>
+          </aside>
         </Reveal>
-      ))}
+      ) : null}
     </div>
   );
 }
@@ -58,6 +87,11 @@ function OfferCard({
       <p className="mt-3 text-sm leading-relaxed text-white/52">
         {offer.purpose}
       </p>
+      {offer.note ? (
+        <p className="mt-5 rounded-xl border border-loop/20 bg-loop/[0.04] px-4 py-3 text-xs leading-relaxed text-loop/80">
+          {offer.note}
+        </p>
+      ) : null}
 
       <ul className="mt-6 flex-1 space-y-2.5">
         {offer.includes.map((item) => (

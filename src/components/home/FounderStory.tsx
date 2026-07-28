@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { BRAND, PRIMARY_CTA } from "@/config/brand";
+import { BRAND, PRIMARY_CTA, WORK_MODEL } from "@/config/brand";
 import { PRINCIPLES } from "@/content/site";
 import { Reveal } from "@/components/Reveal";
 import { Wordmark } from "@/components/brand/Wordmark";
@@ -14,20 +14,26 @@ export function FounderStory() {
             <div>
               <p className="eyebrow">Founder-led by {BRAND.founder.name}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-                One accountable product owner, amplified by agents.
+                One owner. A coordinated system. Evidence closes the loop.
               </h2>
             </div>
             <div>
               <p className="text-xl leading-relaxed text-white/76 sm:text-2xl">
-                TasteLoop is built and led by {BRAND.founder.name}, with nearly
-                ten years across product, design, engineering, QA, launch, and
-                growth with real users.
+                TasteLoop is my product operating system. I own the direction,
+                trade-offs, and quality from the first decision to working
+                evidence.
               </p>
               <p className="mt-5 text-base leading-relaxed text-white/52">
-                I lead every engagement from the decision to working evidence.
-                Agents add speed and range; specialist collaborators can join
-                when the outcome needs them. Accountability never disappears
-                into an unnamed team.
+                Nearly ten years across product, design, engineering, QA,
+                launch, and growth inform the judgment. A coordinated agent
+                system accelerates research, design, engineering, and QA.
+                Evidence from customers and the product corrects what happens
+                next.
+              </p>
+              <p className="mt-5 text-sm leading-relaxed text-white/44">
+                {WORK_MODEL.capacity} The work stays legible and portable in
+                client-owned tools, rather than disappearing into an unnamed
+                team.
               </p>
               <div className="mt-8 grid gap-2 sm:grid-cols-2">
                 {PRINCIPLES.map((principle) => <p key={principle} className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-sm text-white/66">{principle}</p>)}
@@ -45,7 +51,7 @@ export function FounderStory() {
           <div className="grain relative overflow-hidden rounded-[2rem] border border-loop/30 bg-[radial-gradient(circle_at_78%_20%,rgba(217,255,99,.16),transparent_28%),radial-gradient(circle_at_15%_90%,rgba(255,122,89,.12),transparent_30%),#151512] p-8 sm:p-12 lg:p-16">
             <Wordmark />
             <h2 className="mt-8 max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">A better product starts with a better decision.</h2>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/58 sm:text-lg">Tell us the decision you are trying to make. We’ll start there, choose the smallest useful loop, and tell you when the evidence says stop.</p>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/58 sm:text-lg">Tell me the decision you are trying to make. I’ll start there, choose the smallest useful loop, and tell you when the evidence says stop.</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href={PRIMARY_CTA.href} className="inline-flex items-center gap-2 rounded-full bg-loop px-6 py-3 text-sm font-semibold text-ink transition hover:bg-loop/90">
                 {PRIMARY_CTA.label} <ArrowRight className="h-4 w-4" />

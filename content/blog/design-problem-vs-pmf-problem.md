@@ -32,4 +32,4 @@ Talk to five people who churned. Not a survey — a call. Ask one question: "Wha
 
 **The takeaway:** design makes a wanted thing lovable. It can't make an unwanted thing wanted. Diagnose before you decorate.
 
-The reason a Taste Review covers UI, product, positioning, and commercial direction in one pass is exactly this: half the time the "design" request is really one of the other two. A [$499 Taste Review](/work#taste-review) tells you which problem you actually have before you spend a month on the wrong one.
+A [First Loop](/work?loop=first-loop#intake) is built for exactly this kind of uncertainty: name the decision, make the smallest slice that can produce honest evidence, and choose whether to ship, change, narrow, or stop before spending a month on the wrong problem.

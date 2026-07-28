@@ -87,12 +87,6 @@ export const OPEN_LOOP_AREAS = [
     label: "Motion with purpose",
     description: "A live vocabulary of motion patterns, replayable and ready to direct agents with precision.",
   },
-  {
-    href: "/gradient",
-    name: "AURORA",
-    label: "Creative engineering in public",
-    description: "A production-grade living-gradient studio with real editing and export tools.",
-  },
 ] as const;
 
 export const PRINCIPLES = [

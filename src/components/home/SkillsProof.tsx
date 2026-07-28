@@ -27,7 +27,7 @@ export function SkillsProof() {
       <Reveal>
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {essentials.map((skill) => (
-            <Link key={skill.slug} href={`/skills#${skill.slug}`} className="group rounded-2xl border border-line bg-surface/65 p-5 transition hover:border-loop/35">
+            <Link key={skill.slug} href={`/skills/${skill.slug}`} className="group rounded-2xl border border-line bg-surface/65 p-5 transition hover:border-loop/35">
               <div className="flex items-start justify-between gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-signal">{skill.phase}</span>
                 <ArrowUpRight className="h-4 w-4 text-white/25 transition group-hover:text-loop" />
@@ -39,7 +39,7 @@ export function SkillsProof() {
           ))}
         </div>
         <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-dashed border-white/15 px-5 py-4">
-          <p className="text-sm text-white/55">{QUALITY_SKILLS.length} practical skills across the full product lifecycle.</p>
+          <p className="text-sm text-white/55">{QUALITY_SKILLS.length} installable skills · 140 mapped product topics · 6 focused flows.</p>
           <Link href="/skills" className="shrink-0 text-sm font-medium text-loop hover:text-loop/80">Open Skills →</Link>
         </div>
       </Reveal>

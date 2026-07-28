@@ -32,15 +32,15 @@ export default async function Home() {
           </Reveal>
           <Reveal eager>
             <p className="mt-7 max-w-xl text-pretty text-base leading-relaxed text-white/62 sm:text-lg">
-              AI gives every team more output. TasteLoop combines nearly ten
-              years of product experience, agent speed, human judgment, and
-              real-world feedback to choose, design, build, launch, and improve
-              products people actually want.
+              TasteLoop turns difficult product decisions into working
+              evidence. I direct a coordinated agent system across research,
+              product, design, engineering, and QA, hold the quality gate, and
+              use real feedback to decide what ships next.
             </p>
             <p className="mt-4 flex max-w-xl items-center gap-2 text-sm text-white/48">
               <span className="h-px w-5 bg-signal" />
-              Founder-led by {BRAND.founder.name}, accountable from the first
-              decision to working evidence.
+              Built and led by {BRAND.founder.name}. One accountable partner
+              from first decision to shipped product.
             </p>
           </Reveal>
           <Reveal eager>
@@ -68,12 +68,14 @@ export default async function Home() {
           <p className="eyebrow">Why the work changed</p>
           <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_0.72fr] lg:items-end">
             <h2 className="max-w-4xl text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-              More output made judgment the bottleneck.
+              Making multiplied. Judgment became the scarce part.
             </h2>
             <p className="text-base leading-relaxed text-white/58">
-              The work no longer needs more handoffs. It needs one decision to
-              stay visible while agents accelerate the making, a human holds
-              the quality gate, and reality determines the next move.
+              Agents can research, design, code, test, and document in
+              parallel. Without one owner, that creates more noise—not a better
+              product. TasteLoop keeps one decision visible: agents expand the
+              work, Nam holds the gate, and real evidence decides what happens
+              next.
             </p>
           </div>
         </Reveal>

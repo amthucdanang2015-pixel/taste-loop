@@ -1,5 +1,18 @@
 const base = (process.env.BASE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
-const seeds = ["/", "/shipped", "/playground", "/playground/flowtime", "/playground/cards", "/skills", "/animations", "/gradient", "/work", "/about"];
+const seeds = [
+  "/",
+  "/shipped",
+  "/playground",
+  "/playground/flowtime",
+  "/playground/cards",
+  "/skills",
+  "/skills/problem-brief",
+  "/skills/problem-brief/download",
+  "/animations",
+  "/work",
+  "/about",
+  "/gradient",
+];
 const checked = new Map();
 const htmlByPath = new Map();
 const fragments = [];

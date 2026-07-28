@@ -1,274 +1,697 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Check, Copy, ShieldCheck, Search, X, AlertTriangle, FlaskConical, ClipboardCheck, Star, Layers } from "lucide-react";
-import { PHASES, METHODOLOGIES, STACKS, QUALITY_SKILLS, type PhaseId, type Stack, type QualitySkill } from "@/data/qualitySkills";
+import Link from "next/link";
+import {
+  type MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Check,
+  Copy,
+  Download,
+  FlaskConical,
+  Layers3,
+  Library,
+  Map as MapIcon,
+  Search,
+  ShieldCheck,
+  Star,
+  X,
+} from "lucide-react";
+import type { Phase, QualitySkill } from "@/data/qualitySkills";
+import type {
+  SkillsCatalogPack,
+  SkillsCatalogPhase,
+  SkillsCatalogTopic,
+} from "@/data/skillsCatalog";
+import type { SkillSummary } from "@/lib/skills";
 import { copyText } from "@/lib/copyText";
 
-/* ============================================================================
- * Skills Lab (D-027) — Pinterest masonry, done right.
- * A single measured masonry: the opened skill becomes a WIDE, tall detail tile
- * at top-left; every other skill packs around AND below it (grid-auto-flow
- * dense + per-item row spans). No modal, no wasted space under the detail, no
- * layoutId morph (that left some details blank). The detail simply fades in.
- * ==========================================================================*/
+type DirectoryMode = "skills" | "topics" | "flows";
 
-// useLayoutEffect on the client, useEffect on the server (no SSR warning)
-const useIso = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+interface SkillsLabProps {
+  skills: SkillSummary[];
+  qualityPhases: Phase[];
+  catalogPhases: readonly SkillsCatalogPhase[];
+  topics: readonly SkillsCatalogTopic[];
+  packs: readonly SkillsCatalogPack[];
+}
 
-export function SkillsLab() {
-  const [methodId, setMethodId] = useState("waterfall"); // default = the full lifecycle (all phases visible); the chips narrow it
-  const [phase, setPhase] = useState<PhaseId | "all">("all");
-  const [stack, setStack] = useState<Stack>("Any stack");
-  const [essOnly, setEssOnly] = useState(false);
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState<string | null>(null);
-  const reduce = useReducedMotion();
+const MODE_OPTIONS: ReadonlyArray<{
+  id: DirectoryMode;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "skills",
+    label: "Installable skills",
+    description: "40 complete instructions and release gates",
+  },
+  {
+    id: "topics",
+    label: "Product topics",
+    description: "140 questions mapped to useful skills",
+  },
+  {
+    id: "flows",
+    label: "Focused flows",
+    description: "6 ordered paths for common product jobs",
+  },
+];
 
-  const method = METHODOLOGIES.find((m) => m.id === methodId)!;
-  const lanePhases = PHASES.filter((p) => method.loop.includes(p.id));
+export function SkillsLab({
+  skills,
+  qualityPhases,
+  catalogPhases,
+  topics,
+  packs,
+}: SkillsLabProps) {
+  const [mode, setMode] = useState<DirectoryMode>("skills");
+  const [phase, setPhase] = useState("all");
+  const [query, setQuery] = useState("");
+  const [essentialOnly, setEssentialOnly] = useState(false);
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [detail, setDetail] = useState<QualitySkill | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const lastTriggerRef = useRef<HTMLAnchorElement | null>(null);
+  const reduceMotion = useReducedMotion();
 
-  const skills = useMemo(() => {
-    const n = q.trim().toLowerCase();
-    return QUALITY_SKILLS.filter(
-      (s) =>
-        method.loop.includes(s.phase) &&
-        (phase === "all" || s.phase === phase) &&
-        (stack === "Any stack" || s.stacks.includes("Any stack") || s.stacks.includes(stack)) &&
-        (!essOnly || s.essential) &&
-        (!n || `${s.title} ${s.oneLiner} ${s.phase} ${s.gate.join(" ")} ${(s.smells ?? []).join(" ")}`.toLowerCase().includes(n)),
+  const skillBySlug = useMemo(
+    () => new Map(skills.map((skill) => [skill.slug, skill])),
+    [skills],
+  );
+  const openSummary = openSlug ? skillBySlug.get(openSlug) : undefined;
+
+  const visibleSkills = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return skills.filter(
+      (skill) =>
+        (phase === "all" || skill.phase === phase) &&
+        (!essentialOnly || skill.essential) &&
+        (!term ||
+          `${skill.title} ${skill.oneLiner} ${skill.phaseName} ${skill.stacks.join(" ")}`
+            .toLowerCase()
+            .includes(term)),
     );
-  }, [method, phase, stack, essOnly, q]);
+  }, [essentialOnly, phase, query, skills]);
 
-  // the featured always resolves from the FULL set, so a deep-link or a click
-  // never shows an empty tile just because a filter would hide that skill (D-027)
-  const openSkill = open ? QUALITY_SKILLS.find((s) => s.slug === open) : undefined;
-  // featured first (top-left); the rest keep their order and pack around it
-  const ordered = openSkill ? [openSkill, ...skills.filter((s) => s.slug !== openSkill.slug)] : skills;
+  const visibleTopics = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return topics.filter(
+      (topic) =>
+        (phase === "all" || topic.phase === phase) &&
+        (!term ||
+          `${topic.title} ${topic.question} ${topic.phase}`
+            .toLowerCase()
+            .includes(term)),
+    );
+  }, [phase, query, topics]);
 
-  // deep link in (#slug) — on load AND on hash-only navigation
+  const visiblePacks = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return packs.filter(
+      (pack) =>
+        !term ||
+        `${pack.title} ${pack.promise} ${pack.steps.map((step) => step.why).join(" ")}`
+          .toLowerCase()
+          .includes(term),
+    );
+  }, [packs, query]);
+
+  const syncFromUrl = useCallback(() => {
+    const slug = decodeURIComponent(window.location.hash.slice(1));
+    setOpenSlug(skillBySlug.has(slug) ? slug : null);
+  }, [skillBySlug]);
+
   useEffect(() => {
-    const applyHash = () => {
-      const slug = window.location.hash.slice(1);
-      if (slug && QUALITY_SKILLS.some((s) => s.slug === slug)) setOpen(slug);
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    window.addEventListener("hashchange", syncFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl);
+      window.removeEventListener("hashchange", syncFromUrl);
     };
-    applyHash();
-    window.addEventListener("hashchange", applyHash);
-    return () => window.removeEventListener("hashchange", applyHash);
-  }, []);
-  useEffect(() => {
-    history.replaceState(null, "", open ? `#${open}` : window.location.pathname + window.location.search);
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-  // only clear if the slug isn't a real skill at all (a filter hiding it is fine — it stays featured)
-  useEffect(() => { if (open && !QUALITY_SKILLS.some((s) => s.slug === open)) setOpen(null); }, [open]);
+  }, [syncFromUrl]);
 
-  const packText = skills.map((s) => `## ${s.title}\n${s.prompt}`).join("\n\n");
+  useEffect(() => {
+    if (!openSlug) {
+      setDetail(null);
+      return;
+    }
+
+    let current = true;
+    void import("@/data/qualitySkills").then(({ QUALITY_SKILLS }) => {
+      if (!current) return;
+      setDetail(
+        QUALITY_SKILLS.find((skill) => skill.slug === openSlug) ?? null,
+      );
+    });
+    return () => {
+      current = false;
+    };
+  }, [openSlug]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (openSlug && dialog && !dialog.open) dialog.showModal();
+  }, [openSlug]);
+
+  function changeMode(nextMode: DirectoryMode) {
+    setMode(nextMode);
+    setPhase("all");
+    setEssentialOnly(false);
+    setQuery("");
+  }
+
+  function openSkill(
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    slug: string,
+  ) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    lastTriggerRef.current = event.currentTarget;
+    window.history.pushState(
+      { ...window.history.state, tasteLoopSkill: slug },
+      "",
+      `/skills#${slug}`,
+    );
+    setOpenSlug(slug);
+  }
+
+  function closeSkill() {
+    const activeState = window.history.state as
+      | { tasteLoopSkill?: string }
+      | null;
+
+    if (activeState?.tasteLoopSkill === openSlug) {
+      window.history.back();
+      return;
+    }
+
+    window.history.replaceState(null, "", "/skills");
+    setOpenSlug(null);
+  }
+
+  function finishClosing() {
+    if (openSlug) return;
+    dialogRef.current?.close();
+    lastTriggerRef.current?.focus();
+  }
+
+  const activePhases =
+    mode === "skills" ? qualityPhases : mode === "topics" ? catalogPhases : [];
+  const resultCount =
+    mode === "skills"
+      ? visibleSkills.length
+      : mode === "topics"
+        ? visibleTopics.length
+        : visiblePacks.length;
 
   return (
     <div>
-      {/* the anatomy — how to use this in ten seconds */}
-      <div className="grid gap-3 rounded-2xl border border-line bg-white/[0.02] p-4 sm:grid-cols-3">
-        {[
-          ["1 · Find your skill", "Pick the phase you're in (or search). ★ marks the Essential 10 — adopt those first."],
-          ["2 · Read the anatomy", "Smells spot the problem · the gate blocks it · “prove it” is the test that it's really fixed."],
-          ["3 · Automate it", "Copy the prompt into your agent as a standing instruction — or copy the whole pack at once."],
-        ].map(([h, b]) => (
-          <div key={h}>
-            <p className="text-[12.5px] font-semibold text-white/85">{h}</p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-white/45">{b}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* how you build */}
-      <div className="mt-7 flex flex-wrap gap-2">
-        {METHODOLOGIES.map((m) => (
-          <button key={m.id} onClick={() => { setMethodId(m.id); setPhase("all"); }}
-            className={`rounded-full border px-4 py-2 text-sm transition ${m.id === methodId ? "border-accent/60 bg-accent/10 text-white" : "border-line text-white/60 hover:border-white/25 hover:text-white"}`}>
-            {m.name}
-          </button>
-        ))}
-      </div>
-      <p className="mt-3 max-w-2xl text-[13.5px] leading-relaxed text-white/50">{method.how}</p>
-
-      {/* the phase lane */}
-      <div className="scroll-slim mt-7 flex gap-1.5 overflow-x-auto pb-2">
-        <PhaseChip active={phase === "all"} onClick={() => setPhase("all")} name="All phases" q={`${skills.length} skills in this loop`} />
-        {lanePhases.map((p, i) => (
-          <PhaseChip key={p.id} active={phase === p.id} onClick={() => setPhase(p.id)} name={`${i + 1} · ${p.name}`} q={p.question} />
-        ))}
-      </div>
-
-      {/* stack · essentials · search */}
-      <div className="mt-4 flex flex-wrap items-center gap-1.5">
-        <button onClick={() => setEssOnly((v) => !v)}
-          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[12px] transition ${essOnly ? "border-amber-300/50 bg-amber-400/10 text-amber-200" : "border-line text-white/55 hover:text-white"}`}>
-          <Star className={`h-3 w-3 ${essOnly ? "fill-amber-300 text-amber-300" : ""}`} /> Essential 10
-        </button>
-        <span className="mx-1 h-5 w-px bg-line" />
-        {STACKS.map((s) => (
-          <button key={s} onClick={() => setStack(s)}
-            className={`rounded-lg border px-2.5 py-1 text-[12px] transition ${s === stack ? "border-accent2/60 bg-accent2/10 text-accent2" : "border-line text-white/55 hover:text-white"}`}>
-            {s}
-          </button>
-        ))}
-        <div className="ml-auto flex min-w-[200px] items-center gap-2 rounded-lg border border-line bg-black/30 px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 shrink-0 text-white/40" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${QUALITY_SKILLS.length} skills…`} className="w-full bg-transparent text-[12.5px] outline-none placeholder:text-white/30" />
-          {q && <button onClick={() => setQ("")} aria-label="Clear search" className="text-white/30 hover:text-white"><X className="h-3.5 w-3.5" /></button>}
-        </div>
-      </div>
-
-      {/* results + the pack */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[12px] text-white/40">{skills.length} skills{openSkill ? " · click the big one again to close" : " — click any card to open it"}</p>
-        {skills.length > 0 && <CopyBtn label={`Copy all ${skills.length} as one agent pack`} copied="Pack copied" text={packText} icon={<Layers className="h-3.5 w-3.5" />} />}
-      </div>
-
-      {/* THE MASONRY — featured tile top-left; feed packs around & below it (no modal) */}
-      <div className="mt-4 grid grid-cols-1 gap-x-4 [grid-auto-flow:row_dense] [grid-auto-rows:1px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {ordered.map((s) => {
-          const isOpen = openSkill?.slug === s.slug;
+      <div
+        className="grid gap-2 rounded-2xl border border-line bg-white/[0.025] p-2 sm:grid-cols-3"
+        role="tablist"
+        aria-label="Skills directory views"
+      >
+        {MODE_OPTIONS.map((option) => {
+          const active = mode === option.id;
           return (
-            <MasonryCell key={s.slug} id={s.slug} wide={isOpen} estimate={isOpen ? 460 : 168}>
-              {isOpen ? (
-                <FeaturedDetail s={s} onClose={() => setOpen(null)} reduce={!!reduce} />
-              ) : (
-                <button onClick={() => setOpen(s.slug)} className="w-full rounded-2xl border border-line bg-surface p-5 text-left transition-colors hover:border-white/20">
-                  <CardHead s={s} />
-                  <p className="mt-3 text-[11px] text-white/35">{s.gate.length}-point gate · {s.smells?.length ?? 0} smells · prove-it test</p>
-                </button>
-              )}
-            </MasonryCell>
+            <button
+              key={option.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => changeMode(option.id)}
+              className={`rounded-xl border px-4 py-3 text-left transition ${
+                active
+                  ? "border-loop/45 bg-loop/[0.08] text-white"
+                  : "border-transparent text-white/58 hover:border-line hover:bg-white/[0.025] hover:text-white"
+              }`}
+            >
+              <span className="block text-sm font-semibold">{option.label}</span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-white/42">
+                {option.description}
+              </span>
+            </button>
           );
         })}
       </div>
-      {skills.length === 0 && <p className="mt-10 text-center text-sm text-white/40">No skills match — widen the phase, stack, or search.</p>}
-    </div>
-  );
-}
 
-/** One masonry cell: measures its content and claims exactly that many 1px rows
- *  (+16 for the gap), so items of any height pack tightly. `wide` spans 2 cols. */
-function MasonryCell({ id, wide, estimate, children }: { id: string; wide?: boolean; estimate: number; children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [rows, setRows] = useState(estimate + 16);
-  useIso(() => {
-    const el = ref.current;
-    if (!el) return;
-    const measure = () => setRows(Math.ceil(el.getBoundingClientRect().height) + 16);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [wide]);
-  return (
-    <div id={id} className={`scroll-mt-28 ${wide ? "col-span-full sm:col-span-2" : ""}`} style={{ gridRowEnd: `span ${rows}` }}>
-      <div ref={ref}>{children}</div>
-    </div>
-  );
-}
-
-/** The full detail, laid out for the featured (top-left) tile. */
-function FeaturedDetail({ s, onClose, reduce }: { s: QualitySkill; onClose: () => void; reduce: boolean }) {
-  return (
-    <motion.div
-      initial={reduce ? false : { opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduce ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl border border-accent/40 bg-surface p-5 shadow-[0_0_60px_-28px_rgba(124,92,255,0.55)] sm:p-6"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <CardHead s={s} />
-        <button onClick={onClose} aria-label="Close" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-white/60 transition hover:border-white/30 hover:text-white">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {s.smells && s.smells.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {s.smells.map((sm) => (
-            <span key={sm} className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/20 bg-rose-400/[0.06] px-2.5 py-1 text-[11px] text-rose-200/75">
-              <AlertTriangle className="h-3 w-3 shrink-0 text-rose-400/70" /> {sm}
-            </span>
-          ))}
+      <div className="mt-6 rounded-2xl border border-line bg-surface/65 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <label className="flex min-h-11 flex-1 items-center gap-2 rounded-xl border border-line bg-black/30 px-3 transition focus-within:border-loop/45">
+            <Search className="h-4 w-4 shrink-0 text-white/38" />
+            <span className="sr-only">Search the Skills directory</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={
+                mode === "skills"
+                  ? "Search skills, phases, or stacks"
+                  : mode === "topics"
+                    ? "Search a product question"
+                    : "Search a focused flow"
+              }
+              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+            />
+            {query ? (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="rounded-md p-1 text-white/38 transition hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+          </label>
+          {mode === "skills" ? (
+            <button
+              type="button"
+              aria-pressed={essentialOnly}
+              onClick={() => setEssentialOnly((current) => !current)}
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm transition ${
+                essentialOnly
+                  ? "border-amber-300/45 bg-amber-300/[0.08] text-amber-100"
+                  : "border-line text-white/55 hover:border-white/25 hover:text-white"
+              }`}
+            >
+              <Star
+                className={`h-4 w-4 ${
+                  essentialOnly ? "fill-amber-300 text-amber-300" : ""
+                }`}
+              />
+              Essential 10
+            </button>
+          ) : null}
         </div>
-      )}
 
-      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-white/5 bg-black/25 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest text-white/40"><ShieldCheck className="h-3.5 w-3.5 text-emerald-400/80" /> The gate — no exit until</p>
-            <CopyBtn small label="Copy gate" copied="Copied" icon={<ClipboardCheck className="h-3 w-3" />}
-              text={`## ${s.title} — gate\n${s.gate.map((g) => `- [ ] ${g}`).join("\n")}${s.verify ? `\n\nVerify: ${s.verify}` : ""}`} />
-          </div>
-          <ul className="mt-2.5 space-y-1.5">
-            {s.gate.map((g) => (
-              <li key={g} className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/70">
-                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400/70" /> {g}
-              </li>
+        {activePhases.length > 0 ? (
+          <div
+            className="scroll-slim mt-4 flex gap-2 overflow-x-auto pb-1"
+            aria-label="Filter by product phase"
+          >
+            <PhaseButton
+              active={phase === "all"}
+              label="All phases"
+              onClick={() => setPhase("all")}
+            />
+            {activePhases.map((item) => (
+              <PhaseButton
+                key={item.id}
+                active={phase === item.id}
+                label={"name" in item ? item.name : item.title}
+                onClick={() => setPhase(item.id)}
+              />
             ))}
-          </ul>
-          {s.verify && (
-            <p className="mt-3 flex items-start gap-2 border-t border-white/5 pt-3 text-[12px] leading-relaxed text-white/60">
-              <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent2/80" />
-              <span><span className="font-semibold text-white/75">Prove it:</span> {s.verify}</span>
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-white/5 bg-black/25 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10.5px] font-bold uppercase tracking-widest text-white/40">The skill — paste into your agent</p>
-            <CopyBtn small label="Copy skill" copied="Copied" text={s.prompt} />
           </div>
-          <pre className="scroll-slim mt-2.5 max-h-72 overflow-y-auto whitespace-pre-wrap font-mono text-[11.5px] leading-relaxed text-white/65">{s.prompt}</pre>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+        ) : null}
 
-/** Shared card header — used in both the feed card and the featured tile. */
-function CardHead({ s }: { s: QualitySkill }) {
-  return (
-    <div className="min-w-0">
-      <p className="flex flex-wrap items-center gap-2 text-[10.5px] font-semibold uppercase tracking-widest text-accent2">
-        {PHASES.find((p) => p.id === s.phase)?.name}
-        {s.essential && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 px-2 py-0.5 text-[9.5px] font-bold tracking-wide text-amber-300/90">
-            <Star className="h-2.5 w-2.5 fill-amber-300 text-amber-300" /> Essential
-          </span>
-        )}
-      </p>
-      <h3 className="mt-1.5 text-[17px] font-semibold leading-snug tracking-tight">{s.title}</h3>
-      <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-white/55">{s.oneLiner}</p>
+        <p className="mt-4 text-[12px] text-white/42" aria-live="polite">
+          {resultCount} {mode === "skills" ? "skills" : mode === "topics" ? "topics" : "flows"}
+          {query ? ` matching “${query}”` : ""}
+        </p>
+      </div>
+
+      {mode === "skills" ? (
+        <section className="mt-5" aria-label="Installable product skills">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleSkills.map((skill) => (
+              <SkillCard
+                key={skill.slug}
+                skill={skill}
+                reduceMotion={Boolean(reduceMotion)}
+                onOpen={openSkill}
+              />
+            ))}
+          </div>
+          {visibleSkills.length === 0 ? <EmptyState /> : null}
+        </section>
+      ) : null}
+
+      {mode === "topics" ? (
+        <section className="mt-5" aria-label="Product topics">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleTopics.map((topic) => {
+              const phaseName =
+                catalogPhases.find((item) => item.id === topic.phase)?.title ??
+                topic.phase;
+              return (
+                <article
+                  key={topic.slug}
+                  className="rounded-2xl border border-line bg-surface/55 p-5"
+                >
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
+                    {phaseName}
+                  </p>
+                  <h3 className="mt-3 text-base font-semibold tracking-tight">
+                    {topic.title}
+                  </h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-white/52">
+                    {topic.question}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {topic.skillSlugs.map((slug) => {
+                      const skill = skillBySlug.get(slug);
+                      if (!skill) return null;
+                      return (
+                        <Link
+                          key={slug}
+                          href={`/skills/${slug}`}
+                          onClick={(event) => openSkill(event, slug)}
+                          className="rounded-full border border-line px-2.5 py-1 text-[10px] text-white/52 transition hover:border-loop/35 hover:text-loop"
+                        >
+                          {skill.title}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          {visibleTopics.length === 0 ? <EmptyState /> : null}
+        </section>
+      ) : null}
+
+      {mode === "flows" ? (
+        <section className="mt-5 grid gap-4 lg:grid-cols-2" aria-label="Focused skill flows">
+          {visiblePacks.map((pack) => (
+            <article
+              key={pack.slug}
+              className="rounded-2xl border border-line bg-surface/65 p-5 sm:p-6"
+            >
+              <div className="flex items-start gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-loop/25 bg-loop/[0.08]">
+                  <Layers3 className="h-5 w-5 text-loop" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold tracking-tight">
+                    {pack.title}
+                  </h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-white/52">
+                    {pack.promise}
+                  </p>
+                </div>
+              </div>
+              <ol className="mt-5 space-y-2">
+                {pack.steps.map((step, index) => {
+                  const skill = skillBySlug.get(step.skillSlug);
+                  if (!skill) return null;
+                  return (
+                    <li
+                      key={`${pack.slug}-${step.skillSlug}-${index}`}
+                      className="grid grid-cols-[1.5rem_1fr] gap-2 border-t border-white/[0.06] pt-3 first:border-0 first:pt-0"
+                    >
+                      <span className="font-mono text-[11px] text-loop">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <Link
+                          href={`/skills/${skill.slug}`}
+                          onClick={(event) => openSkill(event, skill.slug)}
+                          className="text-sm font-medium text-white/82 transition hover:text-loop"
+                        >
+                          {skill.title}
+                        </Link>
+                        <p className="mt-0.5 text-[12px] leading-relaxed text-white/42">
+                          {step.why}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </article>
+          ))}
+          {visiblePacks.length === 0 ? <EmptyState /> : null}
+        </section>
+      ) : null}
+
+      <dialog
+        ref={dialogRef}
+        className="skill-dialog"
+        aria-labelledby={openSlug ? `skill-dialog-title-${openSlug}` : undefined}
+        onCancel={(event) => {
+          event.preventDefault();
+          closeSkill();
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) closeSkill();
+        }}
+      >
+        <AnimatePresence onExitComplete={finishClosing}>
+          {openSlug && openSummary ? (
+            <motion.article
+              key={openSlug}
+              layoutId={reduceMotion ? undefined : `skill-${openSlug}`}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+              transition={{
+                duration: reduceMotion ? 0.08 : 0.28,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="skill-dialog-panel"
+            >
+              <div className="skill-dialog-rail">
+                <span>Quality skill</span>
+                <span>{openSummary.phaseName}</span>
+                <span>{openSummary.gateCount}-point gate</span>
+              </div>
+              <div className="skill-dialog-content">
+                <div className="flex items-start justify-between gap-5">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.17em] text-signal">
+                      {openSummary.phaseName} · Agent Skill
+                    </p>
+                    <h2
+                      id={`skill-dialog-title-${openSlug}`}
+                      className="mt-3 max-w-3xl text-2xl font-semibold tracking-[-0.04em] sm:text-4xl"
+                    >
+                      {openSummary.title}
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+                      {openSummary.oneLiner}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeSkill}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line text-white/55 transition hover:border-white/30 hover:text-white"
+                    aria-label={`Close ${openSummary.title}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {detail ? (
+                  <SkillDetail detail={detail} />
+                ) : (
+                  <div
+                    className="mt-8 h-44 animate-pulse rounded-2xl border border-line bg-white/[0.025]"
+                    aria-label="Loading skill"
+                  />
+                )}
+
+                <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-line pt-5">
+                  {detail ? (
+                    <CopyButton text={detail.prompt} label="Copy agent instruction" />
+                  ) : null}
+                  <Link
+                    href={`/skills/${openSlug}/download`}
+                    download
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line px-4 text-xs font-medium text-white/72 transition hover:border-white/30 hover:text-white"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download SKILL.md
+                  </Link>
+                  <Link
+                    href={`/skills/${openSlug}`}
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-xs font-medium text-loop transition hover:text-white"
+                  >
+                    Permanent page
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </motion.article>
+          ) : null}
+        </AnimatePresence>
+      </dialog>
     </div>
   );
 }
 
-function PhaseChip({ active, onClick, name, q }: { active: boolean; onClick: () => void; name: string; q: string }) {
+function SkillCard({
+  skill,
+  reduceMotion,
+  onOpen,
+}: {
+  skill: SkillSummary;
+  reduceMotion: boolean;
+  onOpen: (
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    slug: string,
+  ) => void;
+}) {
   return (
-    <button onClick={onClick} className={`min-w-[150px] shrink-0 rounded-xl border p-3 text-left transition ${active ? "border-accent/60 bg-accent/10" : "border-line hover:border-white/20"}`}>
-      <span className={`block text-[12.5px] font-semibold ${active ? "text-white" : "text-white/75"}`}>{name}</span>
-      <span className="mt-0.5 block text-[10.5px] leading-snug text-white/40">{q}</span>
+    <Link
+      href={`/skills/${skill.slug}`}
+      onClick={(event) => onOpen(event, skill.slug)}
+      className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-loop focus-visible:ring-offset-4 focus-visible:ring-offset-ink"
+    >
+      <motion.article
+        layoutId={reduceMotion ? undefined : `skill-${skill.slug}`}
+        className="h-full rounded-2xl border border-line bg-surface/65 p-5 transition group-hover:-translate-y-0.5 group-hover:border-loop/32 group-focus-visible:border-loop/45"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
+            {skill.phaseName}
+          </p>
+          <div className="flex items-center gap-2">
+            {skill.essential ? (
+              <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.12em] text-amber-200/80">
+                <Star className="h-2.5 w-2.5 fill-amber-300 text-amber-300" />
+                Essential
+              </span>
+            ) : null}
+            <ArrowUpRight className="h-4 w-4 text-white/22 transition group-hover:text-loop" />
+          </div>
+        </div>
+        <h3 className="mt-4 text-lg font-semibold tracking-tight">
+          {skill.title}
+        </h3>
+        <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-white/52">
+          {skill.oneLiner}
+        </p>
+        <p className="mt-5 text-[11px] text-white/34">
+          {skill.gateCount}-point gate · {skill.smellCount} warning signs
+        </p>
+      </motion.article>
+    </Link>
+  );
+}
+
+function SkillDetail({ detail }: { detail: QualitySkill }) {
+  return (
+    <div className="mt-8 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+      <section className="rounded-2xl border border-line bg-black/20 p-4 sm:p-5">
+        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/40">
+          <ShieldCheck className="h-4 w-4 text-loop" />
+          The gate
+        </p>
+        <ul className="mt-4 space-y-2.5">
+          {detail.gate.map((gate) => (
+            <li
+              key={gate}
+              className="flex items-start gap-2 text-[13px] leading-relaxed text-white/68"
+            >
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-loop" />
+              {gate}
+            </li>
+          ))}
+        </ul>
+        {detail.verify ? (
+          <p className="mt-4 flex items-start gap-2 border-t border-line pt-4 text-[12px] leading-relaxed text-white/55">
+            <FlaskConical className="mt-0.5 h-4 w-4 shrink-0 text-accent2" />
+            <span>
+              <span className="font-semibold text-white/72">Prove it:</span>{" "}
+              {detail.verify}
+            </span>
+          </p>
+        ) : null}
+      </section>
+
+      <div className="space-y-4">
+        {detail.smells && detail.smells.length > 0 ? (
+          <section className="rounded-2xl border border-rose-400/15 bg-rose-400/[0.035] p-4 sm:p-5">
+            <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-rose-200/58">
+              <AlertTriangle className="h-4 w-4" />
+              Warning signs
+            </p>
+            <ul className="mt-3 space-y-2">
+              {detail.smells.map((smell) => (
+                <li
+                  key={smell}
+                  className="text-[12px] leading-relaxed text-white/55"
+                >
+                  {smell}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        <section className="rounded-2xl border border-line bg-black/20 p-4 sm:p-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/40">
+            Agent instruction
+          </p>
+          <pre className="scroll-slim mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-white/58">
+            {detail.prompt}
+          </pre>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function PhaseButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`min-h-9 shrink-0 rounded-full border px-3 text-[11px] transition ${
+        active
+          ? "border-loop/45 bg-loop/[0.08] text-white"
+          : "border-line text-white/48 hover:border-white/25 hover:text-white"
+      }`}
+    >
+      {label}
     </button>
   );
 }
 
-function CopyBtn({ text, label, copied, small, icon }: { text: string; label: string; copied: string; small?: boolean; icon?: React.ReactNode }) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
-  useEffect(() => { setCopyStatus("idle"); }, [text]);
+function EmptyState() {
+  return (
+    <div className="mt-5 rounded-2xl border border-dashed border-line px-5 py-10 text-center">
+      <p className="text-sm text-white/48">
+        No exact match. Try a broader phase or a shorter question.
+      </p>
+    </div>
+  );
+}
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
 
   async function copy() {
-    setCopyStatus((await copyText(text)) ? "success" : "error");
+    setStatus((await copyText(text)) ? "copied" : "error");
   }
 
   return (
@@ -276,15 +699,61 @@ function CopyBtn({ text, label, copied, small, icon }: { text: string; label: st
       <button
         type="button"
         onClick={copy}
-        className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white/[0.04] font-medium text-white/75 transition hover:border-white/30 hover:text-white ${small ? "px-2 py-1 text-[10.5px]" : "px-3 py-1.5 text-[11.5px]"}`}
-        aria-label={copyStatus === "success" ? `${copied}. Copy again` : copyStatus === "error" ? "Copy failed. Try again" : label}
+        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-loop px-4 text-xs font-semibold text-ink transition hover:bg-white"
       >
-        {copyStatus === "success" ? <Check className={small ? "h-3 w-3 text-emerald-400" : "h-3.5 w-3.5 text-emerald-400"} /> : copyStatus === "error" ? <AlertTriangle className={small ? "h-3 w-3 text-rose-400" : "h-3.5 w-3.5 text-rose-400"} /> : icon ?? <Copy className={small ? "h-3 w-3" : "h-3.5 w-3.5"} />}
-        {copyStatus === "success" ? copied : copyStatus === "error" ? "Copy failed" : label}
+        {status === "copied" ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+        {status === "copied"
+          ? "Instruction copied"
+          : status === "error"
+            ? "Copy failed — retry"
+            : label}
       </button>
-      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {copyStatus === "success" ? `${copied}.` : copyStatus === "error" ? "Could not copy to the clipboard. Try again." : ""}
+      <span className="sr-only" role="status" aria-live="polite">
+        {status === "copied"
+          ? "Agent instruction copied."
+          : status === "error"
+            ? "Copy failed. Try again."
+            : ""}
       </span>
     </>
+  );
+}
+
+export function SkillsDirectoryLegend() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      {[
+        {
+          icon: Library,
+          title: "Skills are complete",
+          body: "Every skill includes a trigger, instruction, failure signals, a quality gate, and a proof test.",
+        },
+        {
+          icon: MapIcon,
+          title: "Topics help you find",
+          body: "Topics are editorial navigation—not thin skills. Each one maps a real product question to authored skills.",
+        },
+        {
+          icon: Layers3,
+          title: "Flows provide order",
+          body: "Focused flows sequence the smallest useful skill set for a specific job without flooding agent context.",
+        },
+      ].map(({ icon: Icon, title, body }) => (
+        <div
+          key={title}
+          className="rounded-2xl border border-line bg-white/[0.02] p-4"
+        >
+          <Icon className="h-4 w-4 text-loop" />
+          <p className="mt-3 text-sm font-semibold">{title}</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-white/43">
+            {body}
+          </p>
+        </div>
+      ))}
+    </div>
   );
 }

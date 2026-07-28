@@ -10,6 +10,7 @@ export interface Offer {
   purpose: string;
   includes: string[];
   cta: string;
+  note?: string;
   featured?: boolean;
 }
 
@@ -24,13 +25,13 @@ export const BRAND = {
   siteUrl: inferredSiteUrl,
   legacySiteUrl: "https://vibetoreal.dev",
   email: "mailnamnv@gmail.com",
-  positioning: "An agent-native product company and product partner.",
+  positioning: "A founder-led product partner, amplified by agents.",
   headline: "The difference is the loop.",
   idea: "Human taste, built into every loop.",
   description:
-    "TasteLoop is a founder-led product company combining nearly ten years of product experience, agent speed, human judgment and real-world feedback to choose, design, build, launch and improve products people actually want.",
+    "TasteLoop is Nam Nguyen's product operating system: founder-led direction and quality, coordinated agent-accelerated research, design, engineering and QA, and real-world evidence looped into better products.",
   socialDescription:
-    "Agent speed, human judgment, and real-world feedback—looped into better products.",
+    "Founder-led product direction, coordinated agent speed, and real-world evidence—looped into better products.",
   founder: {
     name: "Nam Nguyen",
     role: "Founder · Design Engineer",
@@ -42,47 +43,62 @@ export const NAV_LINKS = [
   { href: "/skills", label: "Skills" },
   { href: "/playground", label: "Playground" },
   { href: "/animations", label: "Animations" },
-  { href: "/gradient", label: "AURORA" },
 ] as const;
 
 export const OFFERS: Offer[] = [
   {
     id: "first-loop",
     name: "First Loop",
-    price: "$3,500",
-    priceAmount: 3500,
+    price: "$2,500",
+    priceAmount: 2500,
     timeline: "Delivered in 3 working days",
-    promise: "Turn one important product decision into a working direction.",
+    promise: "Turn one hard product decision into working evidence.",
     purpose:
-      "We define the decision, make the smallest useful product slice, and leave you with evidence-backed direction for what to do next.",
+      "I frame one decision, make the smallest useful product slice, and leave you with evidence-backed direction for what should happen next.",
     includes: [
-      "Decision brief, constraints, and success test",
+      "One decision brief, constraints, and success test",
       "One testable prototype or critical working slice",
       "Product and production direction",
-      "A prioritized 30-day product loop",
+      "A prioritized 30-day product bet",
       "Recorded walkthrough and ship, change, narrow, or stop recommendation",
     ],
     cta: "Start a First Loop",
+    note:
+      "Begin a Product Loop within 14 days of delivery and the full $2,500 First Loop fee is credited to that first 30-day cycle.",
     featured: true,
   },
   {
     id: "product-loop",
     name: "Product Loop",
-    price: "$9,800 per month",
+    price: "$9,800",
     priceAmount: 9800,
-    timeline: "Month to month",
-    promise: "One important product outcome at a time.",
+    timeline: "One 30-day product cycle",
+    promise: "Ship and test one important product outcome.",
     purpose:
-      "An accountable product partner across strategy, research, UX, design, engineering, AI workflows, infrastructure, analytics, launch, and iteration.",
+      "Nam owns the direction, trade-offs, and quality while a coordinated agent system accelerates the work and evidence determines the next move.",
     includes: [
-      "One named outcome with evidence and a decision owner",
-      "End-to-end product and engineering execution",
-      "Frequent working releases, not status theater",
-      "Learnings codified into the product system",
+      "One named outcome and explicit success test",
+      "End-to-end product direction and execution",
+      "Agent-accelerated research, design, engineering, and QA",
+      "Frequent working releases and evidence reviews",
+      "Client-owned code, accounts, documentation, and decision history",
     ],
     cta: "Discuss a Product Loop",
   },
 ];
+
+export const WORK_MODEL = {
+  capacity:
+    "TasteLoop keeps no more than two active engagements at once. Active Product Loop partners receive first priority on the next cycle.",
+  continuity:
+    "Active partners receive at least 30 days' notice if TasteLoop cannot continue, except for non-payment or material breach.",
+  ownership:
+    "Code, accounts, design files, decisions, runbooks, and release history live in tools you own from day one, so continuation or handoff is straightforward.",
+  partnership:
+    "Occasionally a Product Loop becomes a deeper product partnership. That starts after paid work and real customer signal; equity never replaces a workable cash budget.",
+  partnershipPrompt:
+    "Already bring customers or distribution? Mention it in the intake.",
+} as const;
 
 export const offerById = (id: OfferId) => OFFERS.find((offer) => offer.id === id)!;
 export const PRIMARY_OFFER = offerById("first-loop");

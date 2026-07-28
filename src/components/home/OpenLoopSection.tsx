@@ -15,9 +15,6 @@ const visuals = {
       <span className="absolute bottom-[18%] right-[13%] h-12 w-12 rounded-full border border-signal/50 bg-signal/15" />
     </div>
   ),
-  AURORA: (
-    <div className="h-full bg-[radial-gradient(circle_at_68%_32%,rgba(217,255,99,.65),transparent_28%),radial-gradient(circle_at_28%_68%,rgba(255,122,89,.7),transparent_35%),linear-gradient(145deg,#14241d,#161511)]" aria-hidden="true" />
-  ),
 };
 
 export function OpenLoopSection() {
@@ -30,7 +27,7 @@ export function OpenLoopSection() {
           <p className="text-base leading-relaxed text-white/58">Open Loop is where TasteLoop makes its taste inspectable: working interfaces, precise motion language, and creative engineering you can use.</p>
         </div>
       </Reveal>
-      <div className="mt-10 grid gap-4 lg:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
         {OPEN_LOOP_AREAS.map((area, index) => (
           <Reveal key={area.name} delay={index * 0.06}>
             <Link href={area.href} className="group block h-full overflow-hidden rounded-[1.75rem] border border-line bg-surface/65 transition hover:-translate-y-1 hover:border-loop/40">

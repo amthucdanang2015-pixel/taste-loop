@@ -35,6 +35,9 @@ const nextConfig = {
       // /styles grew into the multi-product playground (D-021).
       { source: "/styles", destination: "/playground/flowtime", permanent: false },
       { source: "/styles/live", destination: "/playground/flowtime/live", permanent: false },
+      // AURORA is preserved in source but paused for this launch. Restore its
+      // public route only with the export/responsive QA recorded in docs/QA.md.
+      { source: "/gradient", destination: "/playground", permanent: false },
     ];
   },
 };

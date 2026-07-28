@@ -70,42 +70,79 @@ export function CardPerformer({ ds, accent, layout, mode, data, rot, onFlip, wid
 export async function exportCardPng(ds: DesignSystem, accent: string, layout: Layout, data: CardData) {
   const W = 1050, H = 600, PAD = 50;
   const c = document.createElement("canvas"); c.width = W + PAD * 2; c.height = H * 2 + PAD * 3;
-  const ctx = c.getContext("2d")!;
+  const ctx = c.getContext("2d");
+  if (!ctx) throw new Error("PNG export is unavailable in this browser.");
   ctx.translate(PAD, PAD); drawFace(ctx, ds, accent, "front", layout, data);
   ctx.setTransform(1, 0, 0, 1, PAD, H + PAD * 2); drawFace(ctx, ds, accent, "back", layout, data);
   const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
-  if (blob) dl(blob, `card-${ds.slug}.png`);
+  if (!blob) throw new Error("The browser could not create the PNG.");
+  dl(blob, `card-${ds.slug}.png`);
+}
+
+export function supportsCardVideoExport(): boolean {
+  return (
+    typeof HTMLCanvasElement !== "undefined" &&
+    typeof HTMLCanvasElement.prototype.captureStream === "function" &&
+    typeof MediaRecorder !== "undefined"
+  );
 }
 
 /** WebM turntable spin — shared exporter. */
-export async function exportCardVideo(ds: DesignSystem, accent: string, layout: Layout, data: CardData) {
+export async function exportCardVideo(ds: DesignSystem, accent: string, layout: Layout, data: CardData): Promise<"webm" | "mp4"> {
+  if (!supportsCardVideoExport()) {
+    throw new Error("Video export is not supported in this browser.");
+  }
   const W = 1050, H = 600;
   const c = document.createElement("canvas"); c.width = W; c.height = H;
-  const ctx = c.getContext("2d")!;
+  const ctx = c.getContext("2d");
+  if (!ctx) throw new Error("Video export is unavailable in this browser.");
   const stream = c.captureStream(30);
-  const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 });
-  const chunks: Blob[] = [];
-  rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-  const done = new Promise<void>((r) => { rec.onstop = () => r(); });
-  rec.start();
-  const DUR = 3600, t0 = performance.now();
-  await new Promise<void>((resolve) => {
-    const frame = (now: number) => {
-      const p = Math.min(1, (now - t0) / DUR);
-      const cos = Math.cos(p * Math.PI * 2);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.fillStyle = "#0a0a0b"; ctx.fillRect(0, 0, W, H);
-      ctx.translate(W / 2, H / 2); ctx.scale(Math.max(Math.abs(cos), 0.04) * 0.86, 0.86); ctx.translate(-W / 2, -H / 2);
-      drawFace(ctx, ds, accent, cos >= 0 ? "front" : "back", layout, data);
-      ctx.fillStyle = `rgba(0,0,0,${(1 - Math.abs(cos)) * 0.35})`; ctx.fillRect(0, 0, W, H);
-      if (p < 1) requestAnimationFrame(frame); else resolve();
-    };
-    requestAnimationFrame(frame);
-  });
-  setTimeout(() => rec.stop(), 150);
-  await done;
-  dl(new Blob(chunks, { type: "video/webm" }), `card-${ds.slug}.webm`);
+  let rec: MediaRecorder | null = null;
+  try {
+    const preferredMime = ["video/webm;codecs=vp9", "video/webm"]
+      .find((candidate) => MediaRecorder.isTypeSupported(candidate));
+    rec = new MediaRecorder(
+      stream,
+      preferredMime
+        ? { mimeType: preferredMime, videoBitsPerSecond: 8_000_000 }
+        : { videoBitsPerSecond: 8_000_000 },
+    );
+    const chunks: Blob[] = [];
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    const done = new Promise<void>((resolve, reject) => {
+      rec!.onstop = () => resolve();
+      rec!.onerror = () => reject(new Error("The browser could not record the video."));
+    });
+    // Register a rejection handler immediately; the render pass lasts several
+    // seconds, so an early recorder failure must not become an unhandled event.
+    void done.catch(() => undefined);
+    rec.start();
+    const DUR = 3600, t0 = performance.now();
+    await new Promise<void>((resolve) => {
+      const frame = (now: number) => {
+        const p = Math.min(1, (now - t0) / DUR);
+        const cos = Math.cos(p * Math.PI * 2);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "#0a0a0b"; ctx.fillRect(0, 0, W, H);
+        ctx.translate(W / 2, H / 2); ctx.scale(Math.max(Math.abs(cos), 0.04) * 0.86, 0.86); ctx.translate(-W / 2, -H / 2);
+        drawFace(ctx, ds, accent, cos >= 0 ? "front" : "back", layout, data);
+        ctx.fillStyle = `rgba(0,0,0,${(1 - Math.abs(cos)) * 0.35})`; ctx.fillRect(0, 0, W, H);
+        if (p < 1) requestAnimationFrame(frame); else resolve();
+      };
+      requestAnimationFrame(frame);
+    });
+    if (rec.state !== "inactive") rec.stop();
+    await done;
+    const outputMime = rec.mimeType || preferredMime || "video/webm";
+    const extension = outputMime.includes("mp4") ? "mp4" : "webm";
+    const blob = new Blob(chunks, { type: outputMime });
+    if (blob.size === 0) throw new Error("The browser created an empty video.");
+    dl(blob, `card-${ds.slug}.${extension}`);
+    return extension;
+  } finally {
+    if (rec?.state === "recording") rec.stop();
+    stream.getTracks().forEach((track) => track.stop());
+  }
 }
 
 /* ---------------- one side of the card, in three layouts ---------------- */

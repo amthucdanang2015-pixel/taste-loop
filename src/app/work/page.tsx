@@ -6,6 +6,7 @@ import {
   OFFERS,
   PRIMARY_CTA,
   PRIMARY_OFFER,
+  WORK_MODEL,
 } from "@/config/brand";
 import { Reveal } from "@/components/Reveal";
 import { OfferGrid } from "@/components/offers/OfferGrid";
@@ -27,12 +28,17 @@ export default function WorkPage() {
         <div className="mt-3 grid gap-8 lg:grid-cols-[1.05fr_0.75fr] lg:items-end">
           <div>
             <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Bring the decision, not a feature list.</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/58">We find the smallest useful loop, make enough to meet reality, and recommend what should happen next—even when the answer is narrow it or stop.</p>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/58">I find the smallest useful loop, make enough to meet reality, and recommend what should happen next—even when the answer is narrow it or stop.</p>
           </div>
           <div className="rounded-2xl border border-loop/30 bg-loop/[0.055] p-5">
             <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-loop">Best place to start</p>
             <p className="mt-2 text-lg font-medium">{PRIMARY_OFFER.name} · {PRIMARY_OFFER.price}</p>
             <p className="mt-1 text-sm text-white/55">{PRIMARY_OFFER.promise} {PRIMARY_OFFER.timeline}.</p>
+            {PRIMARY_OFFER.note ? (
+              <p className="mt-3 text-xs leading-relaxed text-white/45">
+                {PRIMARY_OFFER.note}
+              </p>
+            ) : null}
             <a href="#intake" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-loop">
               {PRIMARY_CTA.label} <ArrowDown className="h-4 w-4" />
             </a>
@@ -40,7 +46,7 @@ export default function WorkPage() {
         </div>
       </Reveal>
 
-      <OfferGrid headingLevel="h2" className="mt-16" />
+      <OfferGrid headingLevel="h2" className="mt-16" showOperatingModel />
 
       <Reveal eager>
         <section id="intake" className="mt-20 scroll-mt-28 rounded-[2rem] border border-line bg-surface/75 p-6 sm:p-8 lg:p-10">
@@ -51,8 +57,13 @@ export default function WorkPage() {
                 Start with the decision.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-white/52">
-                Tell me what exists, what you are choosing between, and why it
-                matters now. I read every message and reply personally.
+                Name the decision, what exists now, the evidence or customer
+                signal you already have, what is blocking it, and why it matters
+                now. I read every message and reply personally.
+              </p>
+              <p className="mt-4 border-l border-loop/35 pl-4 text-xs leading-relaxed text-white/42">
+                {WORK_MODEL.partnershipPrompt} A deeper partnership is
+                considered only after paid work and real customer signal.
               </p>
             </div>
             <Suspense fallback={<WorkIntakeFallback />}>

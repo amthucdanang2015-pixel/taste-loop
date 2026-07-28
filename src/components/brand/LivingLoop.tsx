@@ -65,14 +65,26 @@ export function LivingLoop({ className = "" }: { className?: string }) {
           <circle cx="637" cy="350" r="5" className="loop-node-core" />
         </g>
 
+        <g className="loop-memory" aria-hidden="true">
+          <rect x="456" y="199" width="74" height="36" rx="18" />
+          <path d="M476 211 v12 M482 211 v12 M488 211 v12" />
+        </g>
+
         <g className="loop-labels">
-          <text x="36" y="58">many possible outputs</text>
-          <text x="286" y="358">human review</text>
-          <text x="374" y="184">quality gate</text>
-          <text x="548" y="126">real feedback</text>
+          <text x="36" y="58">agents expand</text>
+          <text x="284" y="358">Nam reviews</text>
+          <text x="374" y="184">decision gate</text>
+          <text x="548" y="126">reality corrects</text>
           <text x="510" y="436">stronger next pass</text>
+          <text x="456" y="262">system memory</text>
         </g>
       </svg>
+      <div className="living-loop-mobile-key" aria-hidden="true">
+        <span><i>01</i> Agents expand</span>
+        <span><i>/</i> Nam decides</span>
+        <span><i>03</i> Reality corrects</span>
+        <span><i>04</i> System remembers</span>
+      </div>
       <figcaption className="sr-only">
         Agents expand the option space. Human judgment chooses what crosses the gate. Reality corrects the choice, and the correction strengthens the next loop.
       </figcaption>

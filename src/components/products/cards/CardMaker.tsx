@@ -6,7 +6,7 @@ import { Check, Download, Film, Loader2, MonitorPlay, RefreshCw, X } from "lucid
 import type { DesignSystem } from "@/data/designSystems";
 import { styleTransition } from "../engine/styleMotion";
 import type { Device, DemoMode } from "../engine/contract";
-import { CardPerformer, exportCardPng, exportCardVideo, LAYOUTS, CARD_DEFAULTS, type CardData, type Layout } from "./CardPerformer";
+import { CardPerformer, exportCardPng, exportCardVideo, supportsCardVideoExport, LAYOUTS, CARD_DEFAULTS, type CardData, type Layout } from "./CardPerformer";
 import type { CardScene } from "./scenes";
 
 /* ============================================================================
@@ -41,8 +41,11 @@ export function CardMaker({ ds, scene = "editor", device = "desktop", mode = "sh
   const [rot, setRot] = useState(0);
   const [present, setPresent] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [toast, setToast] = useState<"png" | "webm" | null>(null);
+  const [toast, setToast] = useState<"png" | "webm" | "mp4" | null>(null);
   const [exporting, setExporting] = useState<"" | "png" | "video">("");
+  const [exportError, setExportError] = useState("");
+  const [videoSupported, setVideoSupported] = useState(false);
+  useEffect(() => setVideoSupported(supportsCardVideoExport()), []);
 
   // showcase: each beat scripts the app — the film. Live never runs these.
   useEffect(() => {
@@ -84,10 +87,22 @@ export function CardMaker({ ds, scene = "editor", device = "desktop", mode = "sh
   const flip = () => setRot((r) => r + 180);
   const doExport = async (kind: "png" | "video") => {
     setExporting(kind);
+    setExportError("");
+    setToast(null);
     try {
-      await (kind === "png" ? exportCardPng : exportCardVideo)(ds, accent, layout, data);
-      setToast(kind === "png" ? "png" : "webm");
+      if (kind === "png") {
+        await exportCardPng(ds, accent, layout, data);
+        setToast("png");
+      } else {
+        setToast(await exportCardVideo(ds, accent, layout, data));
+      }
       setTimeout(() => setToast(null), 2200);
+    }
+    catch (error) {
+      const fallback = kind === "video"
+        ? "Video export is not available in this browser. Try PNG instead."
+        : "We couldn’t create the PNG. Please try again.";
+      setExportError(error instanceof Error && error.message ? error.message : fallback);
     }
     finally { setExporting(""); setExportOpen(false); }
   };
@@ -112,7 +127,11 @@ export function CardMaker({ ds, scene = "editor", device = "desktop", mode = "sh
             style={{ color: present ? "var(--accent-text)" : "var(--muted)", background: present ? "var(--accent)" : "transparent", border: `var(--bw) solid ${present ? "var(--accent)" : "var(--border)"}`, borderRadius: "var(--ctl)" }}>
             {present ? <X className="h-3 w-3" /> : <MonitorPlay className="h-3 w-3" />} {present ? "Exit" : "Present"}
           </button>
-          <button onClick={() => live && setExportOpen((v) => !v)} aria-label="Export card"
+          <button onClick={() => {
+            if (!live) return;
+            setExportError("");
+            setExportOpen((value) => !value);
+          }} aria-label="Export card"
             className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold"
             style={{ background: "var(--accent)", color: "var(--accent-text)", borderRadius: "var(--ctl)" }}>
             <Download className="h-3 w-3" /> Export
@@ -173,7 +192,7 @@ export function CardMaker({ ds, scene = "editor", device = "desktop", mode = "sh
                 {live ? (
                   <div className="mt-1.5 space-y-1">
                     <SheetBtn onClick={() => doExport("png")} busy={exporting === "png"} icon={<Download className="h-3 w-3" />} label="PNG · both sides" />
-                    <SheetBtn onClick={() => doExport("video")} busy={exporting === "video"} icon={<Film className="h-3 w-3" />} label="Video · one spin" />
+                    <SheetBtn onClick={() => doExport("video")} busy={exporting === "video"} disabled={!videoSupported} icon={<Film className="h-3 w-3" />} label={videoSupported ? "Video · one spin" : "Video unavailable"} />
                   </div>
                 ) : (
                   <div className="mt-2">
@@ -190,12 +209,23 @@ export function CardMaker({ ds, scene = "editor", device = "desktop", mode = "sh
           <AnimatePresence>
             {toast && (
               <motion.div key="toast" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={tr}
+                role="status" aria-live="polite"
                 className="absolute bottom-2.5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 px-2.5 py-1.5 text-[10px]"
                 style={{ background: "var(--surface)", border: "var(--bw) solid var(--border)", borderRadius: "var(--ctl)", boxShadow: "var(--shadow)" }}>
                 <Check className="h-3 w-3" style={{ color: "var(--accent)" }} /> card-{ds.slug}.{toast} saved
               </motion.div>
             )}
           </AnimatePresence>
+
+          {exportError && (
+            <div
+              role="alert"
+              className="absolute bottom-2.5 left-1/2 z-20 max-w-[calc(100%-1.25rem)] -translate-x-1/2 px-3 py-2 text-center text-[10px]"
+              style={{ background: "var(--surface)", border: "var(--bw) solid var(--border)", borderRadius: "var(--ctl)", boxShadow: "var(--shadow)", color: "var(--text)" }}
+            >
+              {exportError}
+            </div>
+          )}
         </main>
       </div>
     </div>
@@ -216,9 +246,9 @@ function Field({ label, value, onChange, live, typing }: { label: string; value:
     </label>
   );
 }
-function SheetBtn({ onClick, busy, icon, label }: { onClick: () => void; busy: boolean; icon: React.ReactNode; label: string }) {
+function SheetBtn({ onClick, busy, disabled = false, icon, label }: { onClick: () => void; busy: boolean; disabled?: boolean; icon: React.ReactNode; label: string }) {
   return (
-    <button onClick={onClick} disabled={busy} className="flex w-full items-center gap-1.5 px-2 py-1.5 text-[10px] disabled:opacity-50"
+    <button onClick={onClick} disabled={busy || disabled} className="flex w-full items-center gap-1.5 px-2 py-1.5 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
       style={{ border: "var(--bw) solid var(--border)", borderRadius: "var(--ctl)", color: "var(--text)" }}>
       {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : icon} {label}
     </button>

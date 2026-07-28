@@ -8,11 +8,11 @@ export function OffersSection() {
         <p className="eyebrow">Ways to work together</p>
         <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <h2 className="max-w-3xl text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-            Start with one decision. Leave with working direction.
+            Start with one decision. Leave with working evidence.
           </h2>
           <p className="text-base leading-relaxed text-white/58">
-            First Loop is the fixed starting point. Product Loop continues only
-            when the evidence supports a larger outcome.
+            First Loop is the fixed starting point. Product Loop continues one
+            30-day outcome at a time when the evidence supports it.
           </p>
         </div>
       </Reveal>

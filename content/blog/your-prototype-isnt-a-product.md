@@ -29,4 +29,4 @@ Don't rebuild. Audit. Walk your own product as a brand-new user with no data, on
 
 **The takeaway:** AI builds the demo. The product is everything the demo lets you skip.
 
-A [$499 Taste Review](/work#taste-review) applies this same decision lens across product, positioning, UX, conversion, and commercial direction—recorded and prioritized—so you know what should happen next and why.
+A [First Loop](/work?loop=first-loop#intake) applies this decision lens to one important uncertainty, then turns it into a testable product slice and an evidence-backed recommendation for what happens next.

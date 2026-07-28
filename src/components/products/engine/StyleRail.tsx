@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { DESIGN_SYSTEMS, resolveStyle, TYPEFACES, MOTIONS, BG_PRESETS, ICON_STYLES, LOADINGS, SPLASHES, TRANSITIONS, dsFx, type StyleOverrides } from "@/data/designSystems";
 import type { FacetId } from "@/data/products";
 import { motionPreviewEase } from "./styleMotion";
@@ -54,6 +54,7 @@ const DEFAULT_HINTS = (
 );
 
 export function StyleRail({ intro, facets, active, setActive, ov, patchStyle, applyFacet, resetAll, pickerOpen, setPickerOpen, autoTour, kbdHints }: StyleRailProps) {
+  const reduce = useReducedMotion();
   const base = DESIGN_SYSTEMS[active % DESIGN_SYSTEMS.length];
   const ds = useMemo(() => resolveStyle(base, ov), [base, ov]);
   const customized = Object.values(ov).some(Boolean);
@@ -123,7 +124,7 @@ export function StyleRail({ intro, facets, active, setActive, ov, patchStyle, ap
                       {/* D-016: framer writes `transform` inline, so a Tailwind -translate-y
                           would be silently dropped. Dot and track are both 6px — top-0 centers it. */}
                       <motion.span className="absolute top-0 h-1.5 w-1.5 rounded-full" style={{ background: on ? "#22d3ee" : "rgba(255,255,255,0.55)", left: 2 }}
-                        animate={{ x: [0, 28] }} transition={{ duration: Math.max(0.6, m.tokens.dur / 320), repeat: Infinity, repeatType: "mirror", ease: motionPreviewEase(m.tokens.ease) }} />
+                        animate={reduce ? { x: 0 } : { x: [0, 28] }} transition={reduce ? { duration: 0 } : { duration: Math.max(0.6, m.tokens.dur / 320), repeat: Infinity, repeatType: "mirror", ease: motionPreviewEase(m.tokens.ease) }} />
                     </span>
                   </button>
                 );
@@ -218,7 +219,42 @@ function StylePicker({ open, onClose, active, onPick }: { open: boolean; onClose
   const [q, setQ] = useState("");
   const [mode, setMode] = useState<"all" | "light" | "dark">("all");
   const [type, setType] = useState<"all" | "sans" | "serif" | "mono">("all");
+  const reduce = useReducedMotion();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   useEffect(() => { if (open) { setQ(""); } }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const frame = requestAnimationFrame(() => searchRef.current?.focus());
+    return () => {
+      cancelAnimationFrame(frame);
+      previousFocusRef.current?.focus({ preventScroll: true });
+    };
+  }, [open]);
+
+  function onDialogKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])",
+    ) ?? []);
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   const items = DESIGN_SYSTEMS.map((d, i) => ({ d, i })).filter(({ d }) =>
     (mode === "all" || d.mode === mode) && (type === "all" || d.type === type) &&
@@ -229,18 +265,27 @@ function StylePicker({ open, onClose, active, onPick }: { open: boolean; onClose
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[100]">
-          <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
-          <motion.div initial={{ x: "-105%" }} animate={{ x: 0 }} exit={{ x: "-105%" }} transition={{ type: "spring", stiffness: 320, damping: 32 }}
+          <motion.button type="button" tabIndex={-1} aria-label="Close style picker" className="absolute inset-0 bg-black/60 backdrop-blur-sm" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduce ? { opacity: 1 } : { opacity: 0 }} transition={reduce ? { duration: 0 } : undefined} onClick={onClose} />
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Choose a design language"
+            onKeyDown={onDialogKeyDown}
+            initial={reduce ? false : { x: "-105%" }}
+            animate={{ x: 0 }}
+            exit={reduce ? { x: 0 } : { x: "-105%" }}
+            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 32 }}
             className="absolute inset-y-0 left-0 flex w-[420px] max-w-[94vw] flex-col border-r border-line bg-surface shadow-2xl">
             <div className="border-b border-line p-4">
               <div className="flex items-center gap-3">
                 <Search className="h-4 w-4 shrink-0 text-white/40" />
-                <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${DESIGN_SYSTEMS.length} design languages…`} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30" />
-                <button onClick={onClose} aria-label="Close style picker" className="rounded-full border border-line p-2 text-white/70 hover:text-white"><X className="h-4 w-4" /></button>
+                <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search design languages" placeholder={`Search ${DESIGN_SYSTEMS.length} design languages…`} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30" />
+                <button type="button" onClick={onClose} aria-label="Close style picker" className="rounded-full border border-line p-2 text-white/70 hover:text-white"><X className="h-4 w-4" /></button>
               </div>
-              <div className="mt-3 flex gap-1">
+              <div className="mt-3 flex flex-wrap items-center gap-1">
                 {(["all", "light", "dark"] as const).map((m) => <FilterChip key={m} on={mode === m} onClick={() => setMode(m)}>{m}</FilterChip>)}
-                <span className="mx-1 w-px self-stretch bg-line" />
+                <span className="mx-1 hidden w-px self-stretch bg-line sm:block" />
                 {(["all", "sans", "serif", "mono"] as const).map((t) => <FilterChip key={t} on={type === t} onClick={() => setType(t)}>{t}</FilterChip>)}
                 <span className="ml-auto self-center text-[11px] tabular-nums text-white/35">{items.length}</span>
               </div>
@@ -292,18 +337,20 @@ function bgSwatch(p: { fx: string; colors?: [string, string] }, accent: string):
   return { background: "#101014" };
 }
 function LoadingMini({ kind }: { kind: string }) {
-  if (kind === "spinner") return <motion.span className="h-3 w-3 rounded-full border-[1.5px] border-current border-t-transparent" animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }} />;
-  if (kind === "dots") return <span className="flex gap-0.5">{[0, 1, 2].map((i) => <motion.span key={i} className="h-1 w-1 rounded-full bg-current" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15 }} />)}</span>;
-  if (kind === "progress") return <span className="relative h-1 w-5 overflow-hidden rounded-full"><span className="absolute inset-0 bg-current opacity-20" /><motion.span className="absolute inset-y-0 w-2 rounded-full bg-current" animate={{ x: [-8, 20] }} transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} /></span>;
-  return <span className="relative h-2.5 w-5 overflow-hidden rounded-sm"><span className="absolute inset-0 bg-current opacity-20" /><motion.span className="absolute inset-y-0 w-2 bg-current opacity-50" animate={{ x: [-8, 20] }} transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }} /></span>;
+  const reduce = useReducedMotion();
+  if (kind === "spinner") return <motion.span className="h-3 w-3 rounded-full border-[1.5px] border-current border-t-transparent" animate={reduce ? { rotate: 0 } : { rotate: 360 }} transition={reduce ? { duration: 0 } : { duration: 0.9, repeat: Infinity, ease: "linear" }} />;
+  if (kind === "dots") return <span className="flex gap-0.5">{[0, 1, 2].map((i) => <motion.span key={i} className="h-1 w-1 rounded-full bg-current" animate={reduce ? { opacity: 1 } : { opacity: [0.3, 1, 0.3] }} transition={reduce ? { duration: 0 } : { duration: 0.9, repeat: Infinity, delay: i * 0.15 }} />)}</span>;
+  if (kind === "progress") return <span className="relative h-1 w-5 overflow-hidden rounded-full"><span className="absolute inset-0 bg-current opacity-20" /><motion.span className="absolute inset-y-0 w-2 rounded-full bg-current" animate={reduce ? { x: 0 } : { x: [-8, 20] }} transition={reduce ? { duration: 0 } : { duration: 1, repeat: Infinity, ease: "easeInOut" }} /></span>;
+  return <span className="relative h-2.5 w-5 overflow-hidden rounded-sm"><span className="absolute inset-0 bg-current opacity-20" /><motion.span className="absolute inset-y-0 w-2 bg-current opacity-50" animate={reduce ? { x: 0 } : { x: [-8, 20] }} transition={reduce ? { duration: 0 } : { duration: 1.1, repeat: Infinity, ease: "linear" }} /></span>;
 }
 function SplashMini({ kind }: { kind: string }) {
-  if (kind === "pop") return <motion.span className="h-2.5 w-2.5 rounded-full bg-current" animate={{ scale: [0.4, 1.15, 1] }} transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.6 }} />;
-  if (kind === "fade") return <motion.span className="h-2.5 w-2.5 rounded-full bg-current" animate={{ opacity: [0, 1] }} transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.6 }} />;
-  if (kind === "type") return <motion.span className="h-3 w-0.5 bg-current" animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />;
+  const reduce = useReducedMotion();
+  if (kind === "pop") return <motion.span className="h-2.5 w-2.5 rounded-full bg-current" animate={reduce ? { scale: 1 } : { scale: [0.4, 1.15, 1] }} transition={reduce ? { duration: 0 } : { duration: 1, repeat: Infinity, repeatDelay: 0.6 }} />;
+  if (kind === "fade") return <motion.span className="h-2.5 w-2.5 rounded-full bg-current" animate={reduce ? { opacity: 1 } : { opacity: [0, 1] }} transition={reduce ? { duration: 0 } : { duration: 1, repeat: Infinity, repeatDelay: 0.6 }} />;
+  if (kind === "type") return <motion.span className="h-3 w-0.5 bg-current" animate={reduce ? { opacity: 1 } : { opacity: [1, 0, 1] }} transition={reduce ? { duration: 0 } : { duration: 0.8, repeat: Infinity }} />;
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <motion.circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" animate={{ pathLength: [0, 1] }} transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.5 }} />
+      <motion.circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" animate={reduce ? { pathLength: 1 } : { pathLength: [0, 1] }} transition={reduce ? { duration: 0 } : { duration: 1.2, repeat: Infinity, repeatDelay: 0.5 }} />
     </svg>
   );
 }

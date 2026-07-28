@@ -10,6 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         "/api/", "/admin/",
         "/prompts", "/blog", "/patterns", "/teardowns", "/tools",
         "/pro", "/pricing", "/showcase", "/services", "/audit", "/build",
+        "/gradient",
       ],
     },
     sitemap: `${BRAND.siteUrl}/sitemap.xml`,

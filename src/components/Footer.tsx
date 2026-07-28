@@ -20,7 +20,6 @@ const columns = [
     links: [
       { href: "/playground", label: "Playground" },
       { href: "/animations", label: "Animations" },
-      { href: "/gradient", label: "AURORA" },
     ],
   },
   {

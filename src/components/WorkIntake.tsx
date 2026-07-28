@@ -12,7 +12,7 @@ const fields: Field[] = [
     required: true,
     full: true,
     hint:
-      "Include what exists, the choice you are weighing, what is blocking it, and why the answer matters now.",
+      "Include what exists, the choice you are weighing, any customer signal or evidence you already have, what is blocking it, and why the answer matters now.",
     placeholder:
       "For example: We have a working prototype, but we are deciding whether to narrow the audience or change the onboarding before launch. Early users understand the value but do not finish setup…",
   },

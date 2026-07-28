@@ -6,7 +6,7 @@ import type { QualitySkill, Stack } from "./qualitySkills";
  *   layout, dependencies, component APIs, responsive, AI code review, config).
  * - SMELLS: per-skill red flags — "you have this problem if…".
  * - VERIFY: per-skill single concrete test that proves the gate held.
- * Merged into QUALITY_SKILLS at module load (see qualitySkills.ts bottom).
+ * Composed immutably into QUALITY_SKILLS (see qualitySkills.ts bottom).
  */
 
 const ALL: Stack[] = ["Any stack"];

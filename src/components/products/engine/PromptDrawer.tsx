@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useId, useRef, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { dsPrompt, type DesignSystem } from "@/data/designSystems";
 import { copyText } from "@/lib/copyText";
 import { X, Check, Copy } from "lucide-react";
@@ -17,26 +17,80 @@ import { X, Check, Copy } from "lucide-react";
 
 export function PromptDrawer({ open, onClose, ds }: { open: boolean; onClose: () => void; ds: DesignSystem }) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const reduce = useReducedMotion();
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const text = dsPrompt(ds);
   useEffect(() => { setCopyStatus("idle"); }, [ds, open]);
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const frame = requestAnimationFrame(() => closeButtonRef.current?.focus());
+    return () => {
+      cancelAnimationFrame(frame);
+      previousFocusRef.current?.focus({ preventScroll: true });
+    };
+  }, [open]);
   async function copy() {
     setCopyStatus((await copyText(text)) ? "success" : "error");
+  }
+  function onDialogKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])",
+    ) ?? []);
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   return (
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[100]">
-          <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.button
+            type="button"
+            tabIndex={-1}
+            aria-label="Close prompt"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? { opacity: 1 } : { opacity: 0 }}
+            transition={reduce ? { duration: 0 } : undefined}
+            onClick={onClose}
+          />
           {/* right drawer — anchored to the "Get prompt" trigger side (D-014) */}
-          <motion.div initial={{ x: "105%" }} animate={{ x: 0 }} exit={{ x: "105%" }} transition={{ type: "spring", stiffness: 320, damping: 32 }}
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            onKeyDown={onDialogKeyDown}
+            initial={reduce ? false : { x: "105%" }}
+            animate={{ x: 0 }}
+            exit={reduce ? { x: 0 } : { x: "105%" }}
+            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 32 }}
             className="absolute inset-y-0 right-0 flex w-[480px] max-w-[94vw] flex-col border-l border-line bg-surface shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-line p-5">
               <div>
                 <p className="text-xs uppercase tracking-widest text-accent2">Prompt</p>
-                <h3 className="mt-1 text-lg font-semibold tracking-tight">{ds.name}</h3>
+                <h3 id={titleId} className="mt-1 text-lg font-semibold tracking-tight">{ds.name}</h3>
               </div>
-              <button onClick={onClose} aria-label="Close prompt" className="rounded-full border border-line p-2 text-white/70 hover:text-white"><X className="h-4 w-4" /></button>
+              <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close prompt" className="rounded-full border border-line p-2 text-white/70 hover:text-white"><X className="h-4 w-4" /></button>
             </div>
             <div className="flex items-center justify-between px-5 pt-4">
               <span className="text-xs font-medium uppercase tracking-wider text-white/45">Paste into v0 / Cursor / Claude / Lovable</span>
