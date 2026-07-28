@@ -18,6 +18,7 @@ import {
 import { GalleryOptionsPanel } from "./anim/GalleryOptionsPanel";
 import { BorderOptionsPanel, DEFAULT_BORDER_OPTIONS, type BorderOptions } from "./anim/BorderOptionsPanel";
 import { ButtonOptionsPanel, DEFAULT_BUTTON_OPTIONS, type ButtonOptions } from "./anim/ButtonOptionsPanel";
+import { MotionOptionsPanel, DEFAULT_MOTION_OPTIONS, type MotionOptions } from "./anim/MotionOptionsPanel";
 import {
   DEFAULT_GALLERY_OPTIONS,
   BASE_DEFAULT_GALLERY_OPTIONS,
@@ -27,6 +28,7 @@ import { ANIM_ITEMS, ANIM_CATEGORIES, USE_BY_CAT, type AnimItem } from "@/data/a
 import { AnimDemo } from "@/components/anim";
 import { Stage } from "@/components/anim/Stage";
 import { ANIMATION_TYPES } from "@/content";
+import { getMotionCode } from "@/components/anim/motionCodegens";
 
 
 // ─── Entrances color ──────────────────────────────────────────────────────────
@@ -115,20 +117,20 @@ export function AnimationStudio() {
       const animItem = ANIM_ITEMS.find((a) => a.slug === selectedId);
       if (animItem) return animItem.category;
     }
-    return "gallery";
-  }, [typeParam, selectedId]);
+    // On desktop with no explicit type, return null to show discovery mode
+    return isDesktop ? null : "gallery";
+  }, [typeParam, selectedId, isDesktop]);
 
   const isCategoryActive = useCallback(
     (typeId: string) => {
+      // In discovery mode (null activeType), no category is highlighted
+      if (activeType === null) return false;
       if (typeParam || selectedId) {
         return activeType === typeId;
       }
-      if (isDesktop) {
-        return typeId === "gallery";
-      }
       return false;
     },
-    [typeParam, selectedId, activeType, isDesktop]
+    [typeParam, selectedId, activeType]
   );
 
   const createQueryString = useCallback(
@@ -164,18 +166,65 @@ export function AnimationStudio() {
     router.push(nextUrl, { scroll: false });
   }, [createQueryString, router]);
 
+  // Track whether the current item detail was opened from the discovery page
+  // (no active type selected) so we can return there on close.
+  const openedFromDiscovery = useRef(false);
+
   const handleSelectItem = useCallback(
     (itemKey: string) => {
-      const nextUrl = createQueryString(activeType, itemKey);
+      // In discovery mode (null activeType), resolve the item's own category
+      const resolvedType = activeType ?? ANIM_ITEMS.find((a) => a.slug === itemKey)?.category ?? null;
+      openedFromDiscovery.current = activeType === null;
+      const nextUrl = createQueryString(resolvedType, itemKey);
       router.push(nextUrl, { scroll: false });
     },
     [createQueryString, activeType, router]
   );
 
   const handleCloseDetail = useCallback(() => {
+    if (openedFromDiscovery.current) {
+      // Return to the discovery page (no params)
+      openedFromDiscovery.current = false;
+      const nextUrl = createQueryString(null, null);
+      router.push(nextUrl, { scroll: false });
+      return;
+    }
     const nextUrl = createQueryString(activeType, null);
     router.push(nextUrl, { scroll: false });
   }, [createQueryString, activeType, router]);
+
+  // ── Discovery items: seeded random sample across all categories ──────────────
+  const discoveryItems = useMemo(() => {
+    const categories = ANIMATION_TYPES.filter((t) => !t.badge).map((t) => t.id);
+    const byCategory: Record<string, AnimItem[]> = {};
+    for (const cat of categories) {
+      const catItems = ANIM_ITEMS.filter((a) => a.category === cat);
+      if (catItems.length > 0) byCategory[cat] = catItems;
+    }
+    // Pick up to 2 items per category, then shuffle
+    const selected: AnimItem[] = [];
+    for (const items of Object.values(byCategory)) {
+      // Use a deterministic shuffle based on index so SSR/CSR match
+      const pick = items.slice(0, 2);
+      selected.push(...pick);
+    }
+    // Interleave by cycling through categories so all are represented early
+    const interleaved: AnimItem[] = [];
+    const perCat = Object.values(byCategory);
+    const maxLen = Math.max(...perCat.map((c) => Math.min(c.length, 2)));
+    for (let i = 0; i < maxLen; i++) {
+      for (const items of perCat) {
+        if (items[i]) interleaved.push(items[i]);
+      }
+    }
+    // Deduplicate (preserve order)
+    const seen = new Set<string>();
+    return interleaved.filter((item) => {
+      if (seen.has(item.slug)) return false;
+      seen.add(item.slug);
+      return true;
+    });
+  }, []);
 
   const allSearchableItems = useMemo(() => {
     const anims = ANIM_ITEMS.map((item) => {
@@ -313,7 +362,16 @@ export function AnimationStudio() {
       key: "id",
       getProps: (x: TextEffectTemplate) => ({ template: x }),
     }
-    : activeType === "gallery"
+    : activeType === null
+      ? {
+        items: discoveryItems,
+        Card: EntranceCard as any,
+        Detail: MotionExpandedDetail as any,
+        selected: null,
+        key: "slug",
+        getProps: (x: AnimItem) => ({ item: x }),
+      }
+      : activeType === "gallery"
       ? {
         items: ANIM_ITEMS.filter((a) => a.category === activeType),
         Card: EntranceCard as any,
@@ -340,35 +398,44 @@ export function AnimationStudio() {
             key: "slug",
             getProps: (x: AnimItem) => ({ item: x }),
           }
-          : activeType === "animations"
+          : (activeType === "image" || activeType === "cursor" || activeType === "elements" || activeType === "background")
             ? {
-              items: ANIM_ITEMS.filter(
-                (a) =>
-                  a.category === "animations" ||
-                  a.category === "entrances" ||
-                  a.category === "sequencing" ||
-                  a.category === "transforms" ||
-                  a.category === "transitions" ||
-                  a.category === "scroll" ||
-                  a.category === "spring" ||
-                  a.category === "looping" ||
-                  a.category === "polish" ||
-                  a.category === "feedback"
-              ),
+              items: ANIM_ITEMS.filter((a) => a.category === activeType),
               Card: EntranceCard as any,
-              Detail: EntranceExpandedDetail as any,
+              Detail: MotionExpandedDetail as any,
               selected: selectedAnimItem,
               key: "slug",
               getProps: (x: AnimItem) => ({ item: x }),
             }
-            : {
-              items: ANIM_ITEMS.filter((a) => a.category === activeType),
-              Card: EntranceCard as any,
-              Detail: EntranceExpandedDetail as any,
-              selected: selectedAnimItem,
-              key: "slug",
-              getProps: (x: AnimItem) => ({ item: x }),
-            };
+            : activeType === "animations"
+              ? {
+                items: ANIM_ITEMS.filter(
+                  (a) =>
+                    a.category === "animations" ||
+                    a.category === "entrances" ||
+                    a.category === "sequencing" ||
+                    a.category === "transforms" ||
+                    a.category === "transitions" ||
+                    a.category === "scroll" ||
+                    a.category === "spring" ||
+                    a.category === "looping" ||
+                    a.category === "polish" ||
+                    a.category === "feedback"
+                ),
+                Card: EntranceCard as any,
+                Detail: MotionExpandedDetail as any,
+                selected: selectedAnimItem,
+                key: "slug",
+                getProps: (x: AnimItem) => ({ item: x }),
+              }
+              : {
+                items: ANIM_ITEMS.filter((a) => a.category === activeType),
+                Card: EntranceCard as any,
+                Detail: EntranceExpandedDetail as any,
+                selected: selectedAnimItem,
+                key: "slug",
+                getProps: (x: AnimItem) => ({ item: x }),
+              };
 
   return (
     <div className="block min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
@@ -454,6 +521,20 @@ export function AnimationStudio() {
         {config && config.items.length > 0 ? (
           <LayoutGroup>
             <div className="p-4 sm:p-8 lg:p-16">
+              {/* Discovery mode header */}
+              {activeType === null && (
+                <div className="mb-8 hidden lg:block">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-white/30">
+                    Animation Index — All Categories
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-white/80">
+                    Browse the collection
+                  </h2>
+                  <p className="mt-1 font-mono text-xs text-white/40">
+                    Select a category from the left to filter, or click any item to explore it.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-1 border-b border-t border-l border-white/10 lg:grid-cols-3">
                 {config.items.map((item, idx) => {
                   const key = (item as any)[config.key] as string;
@@ -484,8 +565,9 @@ export function AnimationStudio() {
         ) : (
           <ComingSoonCard
             label={
-              ANIMATION_TYPES.find((t) => t.id === activeType)?.label ??
               activeType
+                ? (ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType)
+                : "Animation Index"
             }
           />
         )}
@@ -1748,6 +1830,7 @@ function generateComponentCode(
     item?: AnimItem;
     textOptions?: TextOptions;
     galleryOptions?: GalleryOptions;
+    motionOptions?: Partial<MotionOptions>;
     promptText: string;
   }
 ): string {
@@ -1823,6 +1906,11 @@ export default ${compName}Gallery;
     if (item.category === "button") {
       return getFullButtonCode(item.variant, item.name);
     }
+    // For motion categories, use faithful per-variant code generators
+    const motionOpts: MotionOptions = { ...DEFAULT_MOTION_OPTIONS.default, ...(data.motionOptions ?? {}) };
+    const motionCode = getMotionCode(item.category, item.variant, motionOpts);
+    if (motionCode) return motionCode;
+
     const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
 
     return `// ${item.name} — TasteLoop Motion Component
@@ -3007,6 +3095,147 @@ function ButtonExpandedDetail({
               </div>
             }
           />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Motion Expanded Detail ──────────────────────────────────────────────────
+
+function MotionExpandedDetail({
+  item,
+  onClose,
+}: {
+  item: AnimItem;
+  onClose: () => void;
+}) {
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
+  const defaultOpts = DEFAULT_MOTION_OPTIONS[item.category] ?? DEFAULT_MOTION_OPTIONS.default;
+  const [motionOptions, setMotionOptions] = useState<MotionOptions>(defaultOpts);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    setReplayKey((k) => k + 1);
+    setMotionOptions(DEFAULT_MOTION_OPTIONS[item.category] ?? DEFAULT_MOTION_OPTIONS.default);
+  }, [item]);
+
+  const handleReset = () => setMotionOptions(DEFAULT_MOTION_OPTIONS[item.category] ?? DEFAULT_MOTION_OPTIONS.default);
+
+  const promptText = useMemo(() => {
+    const opts = motionOptions;
+    return `${item.prompt ?? item.def}\n\nPattern: ${item.name}\nCategory: ${item.category}\nSpeed: ${opts.speed}x\nIntensity: ${opts.intensity}\nPrimary Color: ${opts.primaryColor}\nAccent Color: ${opts.accentColor}`;
+  }, [item, motionOptions]);
+
+  const codeText = useMemo(() => {
+    return generateComponentCode("entrance", { item, promptText, motionOptions });
+  }, [item, promptText, motionOptions]);
+
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+      transition={reduce ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-[#0d0c14] lg:left-[280px]"
+    >
+      <CopyModal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} promptText={promptText} codeText={codeText} />
+      {/* Top Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ delay: 0.05, duration: 0.18 }}
+        className="flex items-center justify-between border-b border-white/8 px-4 sm:px-6 py-3 pt-20 lg:pt-4"
+      >
+        <button
+          onClick={onClose}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+        <button
+          onClick={() => setCopyModalOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/10 px-4 py-2 text-sm font-medium text-[#a78bfa] transition hover:bg-[#7c5cff]/20"
+        >
+          <Copy className="h-4 w-4" />
+          Copy
+        </button>
+      </motion.div>
+
+      {/* Split Layout */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        {/* Left — Live Stage */}
+        <div className="relative flex min-h-[340px] shrink-0 items-center justify-center border-b border-white/8 sm:min-h-[420px] lg:min-h-0 lg:flex-1 lg:border-b-0 lg:border-r">
+          <Stage accent={ENTRANCE_COLOR} className="h-full w-full rounded-none border-none">
+            <AnimatePresence mode="wait" initial={!reduce}>
+              <motion.div
+                key={`${item.slug}-${replayKey}`}
+                initial={reduce ? false : { opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.99 }}
+                transition={reduce ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="flex h-full w-full items-center justify-center p-2 sm:p-6"
+              >
+                <AnimDemo demo={item.demo} variant={item.variant} options={motionOptions} />
+              </motion.div>
+            </AnimatePresence>
+          </Stage>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.15 }}
+            onClick={() => setReplayKey((k) => k + 1)}
+            className="absolute bottom-4 right-5 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/10 hover:text-white/70"
+          >
+            <RotateCw className="h-3 w-3" /> replay
+          </motion.button>
+        </div>
+
+        {/* Right — Motion Options Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 16 }}
+          transition={{ delay: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.22 }}
+          className="flex w-full flex-col overflow-y-auto p-6 lg:w-[420px] lg:shrink-0"
+        >
+          <MotionOptionsPanel
+            category={item.category}
+            variant={item.variant}
+            options={motionOptions}
+            onChange={setMotionOptions}
+            onReset={handleReset}
+          />
+          <div className="mt-6 flex flex-col gap-4">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#a78bfa]">
+                {item.name}
+              </span>
+              <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                {item.name}
+              </h2>
+              <p className="mt-2 text-xs leading-relaxed text-white/50">
+                {item.def}
+              </p>
+            </div>
+            {item.tip && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Craft note</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-white/70">{item.tip}</p>
+              </div>
+            )}
+            <div className="h-px bg-white/8" />
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">AI Prompt</p>
+              <pre className="overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/65">
+                {promptText}
+              </pre>
+            </div>
+          </div>
         </motion.div>
       </div>
     </motion.div>
