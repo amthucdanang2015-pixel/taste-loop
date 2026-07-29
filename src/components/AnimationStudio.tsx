@@ -61,8 +61,9 @@ function useRipple() {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
+import { Suspense } from "react";
 
-export function AnimationStudio() {
+function AnimationStudioContent() {
   const [q] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -2333,6 +2334,14 @@ function EntranceCard({
         </span>
       </div>
     </motion.div>
+  );
+}
+
+export function AnimationStudio() {
+  return (
+    <Suspense fallback={null}>
+      <AnimationStudioContent />
+    </Suspense>
   );
 }
 

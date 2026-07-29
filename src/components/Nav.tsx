@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { isImmersive } from "@/lib/chrome";
 import { NAV_LINKS, PRIMARY_CTA } from "@/config/brand";
 import { Wordmark } from "@/components/brand/Wordmark";
 
-export function Nav() {
+function NavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { scrollY } = useScroll();
@@ -146,5 +146,13 @@ export function Nav() {
         </AnimatePresence>
       </motion.nav>
     </motion.header>
+  );
+}
+
+export function Nav() {
+  return (
+    <Suspense fallback={null}>
+      <NavContent />
+    </Suspense>
   );
 }

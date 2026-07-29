@@ -31,19 +31,24 @@ export function useResponsiveText(
         const measurer = document.createElement("div");
         measurer.style.position = "absolute";
         measurer.style.visibility = "hidden";
-        measurer.style.whiteSpace = "pre-wrap";
-        measurer.style.wordBreak = "break-word";
         measurer.style.width = `${width}px`; // Constrain to container width
         measurer.style.padding = "0";
         measurer.style.margin = "0";
         measurer.style.lineHeight = String(options.lineHeight);
         
-        // Copy relevant styles from container
-        const computedStyle = window.getComputedStyle(container);
+        // Find the deepest element to copy typography styles accurately (e.g. font-mono, whitespace-nowrap)
+        let target: Element = container;
+        while (target.firstElementChild) {
+          target = target.firstElementChild;
+        }
+        
+        const computedStyle = window.getComputedStyle(target);
         measurer.style.fontFamily = computedStyle.fontFamily;
         measurer.style.fontWeight = computedStyle.fontWeight;
         measurer.style.letterSpacing = computedStyle.letterSpacing;
         measurer.style.textTransform = computedStyle.textTransform;
+        measurer.style.whiteSpace = computedStyle.whiteSpace;
+        measurer.style.wordBreak = computedStyle.wordBreak;
         
         measurer.innerText = text;
         document.body.appendChild(measurer);

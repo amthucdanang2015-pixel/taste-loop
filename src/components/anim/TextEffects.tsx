@@ -433,7 +433,7 @@ export function TextEffectRenderer({
     <div
       ref={containerRef}
       style={customStyle as React.CSSProperties}
-      className="w-full h-full flex items-center justify-center transition-all duration-150 whitespace-pre-wrap text-inherit [&_*]:[font-size:var(--custom-font-size,inherit)!important] [&_*]:[font-weight:var(--custom-font-weight,inherit)!important] [&_*:not([style*='transparent']):not([style*='BackgroundClip'])]:[color:var(--custom-color,inherit)] [&_*]:[font-family:var(--custom-font-family,inherit)!important] [&_*]:[letter-spacing:var(--custom-letter-spacing,inherit)!important] [&_*]:[line-height:var(--custom-line-height,inherit)!important] [&_*]:[text-align:var(--custom-text-align,inherit)!important]"
+      className="min-w-0 min-h-0 w-full h-full flex items-center justify-center whitespace-pre-wrap text-inherit [&_*]:[font-size:var(--custom-font-size,inherit)!important] [&_*]:[font-weight:var(--custom-font-weight,inherit)!important] [&_*:not([style*='transparent']):not([style*='BackgroundClip'])]:[color:var(--custom-color,inherit)] [&_*]:[font-family:var(--custom-font-family,inherit)!important] [&_*]:[letter-spacing:var(--custom-letter-spacing,inherit)!important] [&_*]:[line-height:var(--custom-line-height,inherit)!important] [&_*]:[text-align:var(--custom-text-align,inherit)!important]"
     >
       {renderEffect()}
     </div>

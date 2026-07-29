@@ -71,8 +71,9 @@ function IntakeForm({ selectedOffer }: { selectedOffer: OfferId }) {
     />
   );
 }
+import { Suspense } from "react";
 
-export function WorkIntake() {
+function WorkIntakeContent() {
   const searchParams = useSearchParams();
   const formRegion = useRef<HTMLDivElement>(null);
   const requestedOffer = searchParams.get("loop");
@@ -113,6 +114,14 @@ export function WorkIntake() {
     <div ref={formRegion}>
       <IntakeForm selectedOffer={selectedOffer} />
     </div>
+  );
+}
+
+export function WorkIntake() {
+  return (
+    <Suspense fallback={<WorkIntakeFallback />}>
+      <WorkIntakeContent />
+    </Suspense>
   );
 }
 
