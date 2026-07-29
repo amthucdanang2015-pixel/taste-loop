@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Bot, CircleDotDashed, UserRound } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bot,
+  CircleDotDashed,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 import { BRAND, WORK_MODEL } from "@/config/brand";
 import { PRINCIPLES } from "@/content/site";
 import { CtaBlock } from "@/components/CtaBlock";
@@ -10,7 +16,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
 export const metadata: Metadata = {
   title: "About TasteLoop",
   description:
-    "TasteLoop is Nam Nguyen's founder-led product operating system: human direction and quality, coordinated agent speed, and real-world evidence.",
+    "TasteLoop is Nam Nguyen's founder-led, team-backed product operating system: accountable direction, coordinated agent speed, and real-world evidence.",
 };
 
 const ownership = [
@@ -19,6 +25,12 @@ const ownership = [
     title: "Direction and the quality gate",
     body: "The product decision, trade-offs, non-goals, taste bar, commercial coherence, and final call never disappear into a queue.",
     icon: UserRound,
+  },
+  {
+    eyebrow: "The team adds",
+    title: "Long-running shared context",
+    body: "A trusted core team that has worked with Nam for more than ten years adds business, technical, AI, and systems depth where the outcome needs it.",
+    icon: UsersRound,
   },
   {
     eyebrow: "Agents accelerate",
@@ -62,8 +74,8 @@ export default function AboutPage() {
     <div className="mx-auto max-w-5xl px-6 pb-28 pt-32 sm:pt-36">
       <PageHeader
         eyebrow="About TasteLoop"
-        title="One accountable partner. An agent system behind the work."
-        intro="TasteLoop is the product system. Nam is the accountable operator. Agents expand the work. Evidence corrects it."
+        title="Founder-led. Team-backed. Agent-accelerated."
+        intro="Nam holds the direction and final quality gate. A trusted team adds depth. Agents expand the work. Evidence corrects it."
       />
 
       <section className="mt-12 grid gap-10 text-[15px] leading-relaxed text-white/68 md:grid-cols-[0.62fr_1.38fr]">
@@ -75,27 +87,27 @@ export default function AboutPage() {
         </div>
         <div className="space-y-5">
           <p className="text-xl leading-relaxed text-white/82">
-            I’m {BRAND.founder.name}. For nearly ten years, I’ve helped turn
-            product ideas into shipped software—from direction and design
-            through engineering, QA, launch, and iteration.
+            I’m {BRAND.founder.name}. I have spent more than ten years turning
+            product ideas into shipped software—from business and product
+            direction through design, engineering, QA, launch, and iteration.
           </p>
           <p>
-            TasteLoop is the operating system I built around that experience.
-            A coordinated agent system creates more range and speed without
-            breaking the work into handoffs. I set the direction, review every
-            critical output, and stay accountable until evidence says ship,
-            change, narrow, or stop.
+            A trusted core team has worked alongside me for more than ten
+            years. That shared context across business, technology, AI, and
+            systems lets us move without relearning how one another thinks at
+            every handoff.
           </p>
           <p>
-            This is not a fictional team or an AI feature factory. When
-            specialist human expertise is needed, I name the person and the
-            scope before the work starts. There is never an invisible team
-            between you and the decision.
+            TasteLoop is the operating system around that experience.
+            Coordinated agents create more range and speed across research,
+            design, engineering, and QA. I remain your accountable lead, review
+            every critical output, and make the final call when evidence says
+            ship, change, narrow, or stop.
           </p>
         </div>
       </section>
 
-      <section className="mt-14 grid gap-3 lg:grid-cols-3">
+      <section className="mt-14 grid gap-3 md:grid-cols-2">
         {ownership.map((item) => {
           const Icon = item.icon;
           return (

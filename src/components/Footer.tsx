@@ -49,7 +49,15 @@ export function Footer({ year }: { year: number }) {
             <ul className="space-y-2.5 text-muted">
               {column.links.map((link) => (
                 <li key={link.href + link.label}>
-                  <Link href={link.href} className="transition hover:text-white">{link.label}</Link>
+                  <Link
+                    href={link.href}
+                    data-analytics-location={
+                      link.href.startsWith("/work") ? "footer" : undefined
+                    }
+                    className="transition hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>

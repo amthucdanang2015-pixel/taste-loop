@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { LeadForm, type Field } from "@/components/LeadForm";
 import { OFFERS, PRIMARY_OFFER, type OfferId } from "@/config/brand";
+import { trackEvent } from "@/lib/analytics";
 
 const fields: Field[] = [
   {
@@ -65,19 +67,53 @@ function IntakeForm({ selectedOffer }: { selectedOffer: OfferId }) {
       initialValues={{ engagement: selectedOffer }}
       submitLabel="Send the decision"
       successTitle="Message received."
-      successBody="It is saved, and I’ll reply personally with the most useful next step."
+      successBody="It is saved. Nam normally replies personally within 24 hours with fit, any questions, and the clearest next step."
     />
   );
 }
 
 export function WorkIntake() {
   const searchParams = useSearchParams();
+  const formRegion = useRef<HTMLDivElement>(null);
   const requestedOffer = searchParams.get("loop");
   const selectedOffer =
     OFFERS.find((offer) => offer.id === requestedOffer)?.id ??
     PRIMARY_OFFER.id;
 
-  return <IntakeForm selectedOffer={selectedOffer} />;
+  useEffect(() => {
+    const target = formRegion.current;
+    if (!target) return;
+
+    let measured = false;
+    const measure = () => {
+      if (measured) return;
+      measured = true;
+      trackEvent("intake_view", { offer_id: selectedOffer });
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      measure();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          measure();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [selectedOffer]);
+
+  return (
+    <div ref={formRegion}>
+      <IntakeForm selectedOffer={selectedOffer} />
+    </div>
+  );
 }
 
 export function WorkIntakeFallback() {

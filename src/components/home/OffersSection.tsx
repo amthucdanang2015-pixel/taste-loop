@@ -16,7 +16,7 @@ export function OffersSection() {
           </p>
         </div>
       </Reveal>
-      <OfferGrid className="mt-10" />
+      <OfferGrid className="mt-10" analyticsLocation="home-offers" />
     </section>
   );
 }

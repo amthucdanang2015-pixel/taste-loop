@@ -12,17 +12,26 @@ export function OfferGrid({
   headingLevel = "h3",
   className = "",
   showOperatingModel = false,
+  analyticsLocation = "other",
 }: {
   headingLevel?: "h2" | "h3";
   className?: string;
   showOperatingModel?: boolean;
+  analyticsLocation?:
+    | "home-offers"
+    | "work-offers"
+    | "other";
 }) {
   return (
     <div className={className}>
       <div className="grid gap-4 lg:grid-cols-2">
         {OFFERS.map((offer, index) => (
           <Reveal key={offer.id} delay={index * 0.06}>
-            <OfferCard offer={offer} headingLevel={headingLevel} />
+            <OfferCard
+              offer={offer}
+              headingLevel={headingLevel}
+              analyticsLocation={analyticsLocation}
+            />
           </Reveal>
         ))}
       </div>
@@ -57,9 +66,11 @@ export function OfferGrid({
 function OfferCard({
   offer,
   headingLevel,
+  analyticsLocation,
 }: {
   offer: Offer;
   headingLevel: "h2" | "h3";
+  analyticsLocation: "home-offers" | "work-offers" | "other";
 }) {
   const Heading = headingLevel;
 
@@ -114,6 +125,7 @@ function OfferCard({
         </div>
         <Link
           href={offerHref(offer.id)}
+          data-analytics-location={analyticsLocation}
           className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
             offer.featured
               ? "bg-loop text-ink hover:bg-loop/90"

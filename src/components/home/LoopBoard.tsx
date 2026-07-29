@@ -82,15 +82,15 @@ export function LoopBoard() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[13.5rem_minmax(0,1fr)_minmax(17rem,.72fr)]">
+      <div className="grid xl:grid-cols-[13.5rem_minmax(0,1fr)_minmax(17rem,.72fr)]">
         <nav
           aria-label="TasteLoop operating stages"
-          className="border-b border-line bg-black/15 p-4 lg:border-b-0 lg:border-r"
+          className="border-b border-line bg-black/15 p-4 xl:border-b-0 xl:border-r"
         >
-          <p className="px-2 font-mono text-[9px] uppercase tracking-[0.16em] text-white/30">
+          <p className="px-2 font-mono text-[9px] uppercase tracking-[0.16em] text-white/48">
             Signal → repeat
           </p>
-          <div className="scroll-slim mt-3 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">
+          <div className="scroll-slim mt-3 flex gap-2 overflow-x-auto pb-1 xl:grid xl:overflow-visible xl:pb-0">
             {LOOP_STAGES.map((item, index) => (
               <button
                 key={item.name}
@@ -98,7 +98,7 @@ export function LoopBoard() {
                 onClick={() => setActive(index)}
                 aria-pressed={active === index}
                 aria-controls="loop-stage-detail"
-                className={`relative min-h-11 min-w-[8.25rem] overflow-hidden rounded-xl border px-3 py-2.5 text-left transition lg:min-w-0 ${
+                className={`relative min-h-11 min-w-[8.25rem] overflow-hidden rounded-xl border px-3 py-2.5 text-left transition xl:min-w-0 ${
                   active === index
                     ? "border-loop/45 text-ink"
                     : "border-transparent text-white/48 hover:border-white/12 hover:text-white"
@@ -137,7 +137,7 @@ export function LoopBoard() {
             ease: [0.22, 1, 0.36, 1],
           }}
           aria-live="polite"
-          className="border-b border-line p-5 sm:p-7 lg:border-b-0 lg:border-r"
+          className="border-b border-line p-5 sm:p-7 xl:border-b-0 xl:border-r"
         >
           <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-signal">
             Decision 01 · illustrative
@@ -149,7 +149,7 @@ export function LoopBoard() {
           <div className="mt-7 rounded-2xl border border-white/10 bg-black/24 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/34">
+                <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/50">
                   Work in this stage
                 </p>
                 <p className="mt-1 text-base font-semibold">{work.label}</p>
@@ -160,7 +160,7 @@ export function LoopBoard() {
             </div>
 
             <div className="mt-5">
-              <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/34">
+              <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/50">
                 <Bot className="h-3.5 w-3.5" />
                 Agent capabilities
               </p>
@@ -177,7 +177,7 @@ export function LoopBoard() {
             </div>
 
             <div className="mt-5">
-              <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/34">
+              <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/50">
                 <FileCheck2 className="h-3.5 w-3.5" />
                 Working artifacts
               </p>
@@ -213,14 +213,23 @@ export function LoopBoard() {
             Human gate
           </p>
           <h3 className="mt-3 text-xl font-semibold tracking-[-0.025em]">
-            Nam owns the call.
+            Nam holds the final gate.
           </h3>
+          <p className="mt-2 text-xs leading-relaxed text-white/52">
+            The trusted team adds perspective where it changes the outcome;
+            accountability stays clear.
+          </p>
 
           <dl className="mt-6 space-y-4">
             <BoardDefinition
               label="Human owns"
               value={stage.human}
               icon={<UserRound className="h-3.5 w-3.5" />}
+            />
+            <BoardDefinition
+              label="Agents accelerate"
+              value={stage.agent}
+              icon={<Bot className="h-3.5 w-3.5" />}
             />
             <BoardDefinition
               label="Evidence required"
@@ -266,7 +275,7 @@ function BoardDefinition({
 }) {
   return (
     <div>
-      <dt className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/34">
+      <dt className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/50">
         {icon}
         {label}
       </dt>

@@ -4,6 +4,7 @@ import { BRAND, PRIMARY_CTA, WORK_MODEL } from "@/config/brand";
 import { PRINCIPLES } from "@/content/site";
 import { Reveal } from "@/components/Reveal";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { EmailNamButton } from "@/components/EmailNamButton";
 
 export function FounderStory() {
   return (
@@ -12,34 +13,31 @@ export function FounderStory() {
         <Reveal>
           <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
             <div>
-              <p className="eyebrow">Founder-led by {BRAND.founder.name}</p>
+              <p className="eyebrow">Founder-led · team-backed</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-                One owner. A coordinated system. Evidence closes the loop.
+                One accountable lead. A trusted team. A system that gets
+                stronger.
               </h2>
             </div>
             <div>
               <p className="text-xl leading-relaxed text-white/76 sm:text-2xl">
-                TasteLoop is my product operating system. I own the direction,
-                trade-offs, and quality from the first decision to working
-                evidence.
+                TasteLoop is my product operating system. I lead every
+                engagement and own the direction, trade-offs, and final quality
+                from the first decision to working evidence.
               </p>
               <p className="mt-5 text-base leading-relaxed text-white/52">
-                Nearly ten years across product, design, engineering, QA,
-                launch, and growth inform the judgment. A coordinated agent
-                system accelerates research, design, engineering, and QA.
-                Evidence from customers and the product corrects what happens
-                next.
+                {BRAND.founder.experience} {BRAND.team} Coordinated agents
+                accelerate research, design, engineering, and QA; evidence from
+                customers and the product corrects what happens next.
               </p>
               <p className="mt-5 text-sm leading-relaxed text-white/44">
-                {WORK_MODEL.capacity} The work stays legible and portable in
-                client-owned tools, rather than disappearing into an unnamed
-                team.
+                {WORK_MODEL.capacity} {WORK_MODEL.ownership}
               </p>
               <div className="mt-8 grid gap-2 sm:grid-cols-2">
                 {PRINCIPLES.map((principle) => <p key={principle} className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-sm text-white/66">{principle}</p>)}
               </div>
               <Link href="/about" className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-loop hover:text-loop/80">
-                Why I built TasteLoop <ArrowRight className="h-4 w-4" />
+                How TasteLoop works <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -53,15 +51,12 @@ export function FounderStory() {
             <h2 className="mt-8 max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">A better product starts with a better decision.</h2>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/58 sm:text-lg">Tell me the decision you are trying to make. I’ll start there, choose the smallest useful loop, and tell you when the evidence says stop.</p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href={PRIMARY_CTA.href} className="inline-flex items-center gap-2 rounded-full bg-loop px-6 py-3 text-sm font-semibold text-ink transition hover:bg-loop/90">
+              <Link href={PRIMARY_CTA.href} data-analytics-location="home-final" className="inline-flex items-center gap-2 rounded-full bg-loop px-6 py-3 text-sm font-semibold text-ink transition hover:bg-loop/90">
                 {PRIMARY_CTA.label} <ArrowRight className="h-4 w-4" />
               </Link>
-              <a
-                href={`mailto:${BRAND.email}`}
+              <EmailNamButton
                 className="rounded-full border border-line px-6 py-3 text-sm text-white/78 transition hover:border-white/30 hover:text-white"
-              >
-                Email Nam
-              </a>
+              />
             </div>
           </div>
         </Reveal>

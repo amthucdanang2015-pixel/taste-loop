@@ -14,14 +14,61 @@ test("canonical TasteLoop offers and positioning stay exact", async () => {
     "The difference is the loop.",
     "Human taste, built into every loop.",
     'name: "First Loop"',
-    'price: "$2,500"',
+    'price: "$980"',
     'timeline: "Delivered in 3 working days"',
     'name: "Product Loop"',
     'price: "$9,800"',
     'timeline: "One 30-day product cycle"',
   ]) assert.match(brand, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  assert.doesNotMatch(brand, /Taste Review|\$499|\$3,500|7–10 working days|month to month/i);
+  assert.doesNotMatch(brand, /Taste Review|\$499|\$2,500|\$3,500|7–10 working days|month to month/i);
   assert.doesNotMatch(brand, /siteUrl:\s*configuredSiteUrl\s*\|\|\s*"https:\/\/vibetoreal\.dev"/);
+  assert.match(brand, /more than ten years/i);
+});
+
+test("First Loop FAQ states the launch, ownership, and payment boundaries", async () => {
+  const faq = await read("src/content/work.ts");
+  for (const expected of [
+    "normally replies within 24 hours",
+    "work begins immediately",
+    "non-refundable",
+    "three-working-day delivery window",
+    "Who owns the work?",
+    "Does the ${PRIMARY_OFFER.price} carry into Product Loop?",
+  ]) {
+    assert.match(faq, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  const component = await read("src/components/work/FirstLoopFaq.tsx");
+  assert.match(component, /FAQPage/);
+  assert.match(component, /<details/);
+  assert.match(component, /<summary/);
+  assert.match(await read("src/app/work/page.tsx"), /<FirstLoopFaq \/>/);
+});
+
+test("the founder-led model is transparent about the long-running team", async () => {
+  const home = await read("src/components/home/FounderStory.tsx");
+  const about = await read("src/app/about/page.tsx");
+  const brand = await read("src/config/brand.ts");
+  assert.match(home, /Founder-led · team-backed/);
+  assert.match(about, /Founder-led\. Team-backed\. Agent-accelerated\./);
+  assert.match(brand, /trusted core team[\s\S]*more than ten years/i);
+  assert.doesNotMatch(`${home}\n${about}`, /fictional team|invisible team|unnamed team/i);
+});
+
+test("Living Loop explains the system and LoopBoard exposes agent acceleration", async () => {
+  const livingLoop = await read("src/components/brand/LivingLoop.tsx");
+  for (const phrase of [
+    "One decision. Four connected moves.",
+    "Run useful work in parallel.",
+    "Many outputs. One deliberate direction.",
+    "Let evidence strengthen the system.",
+  ]) assert.match(livingLoop, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(livingLoop, /useInView/);
+  assert.match(livingLoop, /useReducedMotion/);
+
+  const loopBoard = await read("src/components/home/LoopBoard.tsx");
+  assert.match(loopBoard, /value=\{stage\.agent\}/);
+  assert.match(loopBoard, /aria-pressed/);
 });
 
 test("all preserved product routes still have implementations", async () => {

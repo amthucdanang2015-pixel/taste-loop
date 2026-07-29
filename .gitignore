@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+.DS_Store
+.amplify
+amplify_outputs*
+*.tsbuildinfo
+next-env.d.ts
+.vercel

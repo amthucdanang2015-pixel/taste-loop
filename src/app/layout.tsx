@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { WebAnalytics } from "@/components/analytics/WebAnalytics";
 import { BRAND, OFFERS } from "@/config/brand";
+import { ASSET_BASE_URL } from "@/config/assets";
 
 export const viewport: Viewport = {
   colorScheme: "dark",
@@ -59,6 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <meta name="referrer" content="origin" />
+        {ASSET_BASE_URL.startsWith("https://") && (
+          <link rel="preconnect" href={ASSET_BASE_URL} crossOrigin="anonymous" />
+        )}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased">
@@ -66,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main id="main" className="pt-0">{children}</main>
         <Footer year={copyrightYear} />
+        <WebAnalytics />
       </body>
     </html>
   );

@@ -1,93 +1,159 @@
+"use client";
+
+import { useRef, type CSSProperties } from "react";
+import { useInView, useReducedMotion } from "framer-motion";
+
+const sequence = [
+  "Signal",
+  "Decide",
+  "Make",
+  "Review",
+  "Test",
+  "Learn",
+  "Codify",
+  "Repeat",
+] as const;
+
 export function LivingLoop({ className = "" }: { className?: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { amount: 0.25 });
+  const reduce = useReducedMotion();
+
   return (
-    <figure className={`living-loop ${className}`}>
-      <svg
-        viewBox="0 0 760 520"
-        role="img"
-        aria-labelledby="living-loop-title living-loop-description"
-        className="h-auto w-full"
-      >
-        <title id="living-loop-title">The TasteLoop operating system</title>
-        <desc id="living-loop-description">
-          Many agent outputs converge at a human quality gate. One direction meets real-world feedback, loops back, and becomes a stronger next pass.
-        </desc>
-        <defs>
-          <filter id="loop-soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-          <marker id="loop-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-          </marker>
-        </defs>
+    <figure
+      ref={ref}
+      className={`living-loop ${inView && !reduce ? "is-animated" : ""} ${className}`}
+      aria-labelledby="living-loop-title living-loop-caption"
+    >
+      <header className="living-loop-header">
+        <div>
+          <p className="living-loop-kicker">
+            <span aria-hidden="true" />
+            Live operating loop
+          </p>
+          <h2 id="living-loop-title">One decision. Four connected moves.</h2>
+        </div>
+        <p className="living-loop-status">Human-led · evidence-closed</p>
+      </header>
 
-        <g className="loop-candidates" fill="none" strokeLinecap="round">
-          <path d="M36 98 C154 96 184 184 312 226" />
-          <path d="M36 166 C148 164 214 204 312 236" />
-          <path d="M36 236 C166 234 224 240 312 246" />
-          <path d="M36 306 C158 308 212 282 312 256" />
-          <path d="M36 376 C148 380 188 308 312 266" />
-        </g>
+      <div className="living-loop-board">
+        <article className="living-loop-card">
+          <CardHeader number="01" label="Frame" owner="Human owned" />
+          <h3>Make the decision explicit.</h3>
+          <p>
+            Nam sets the customer, trade-off, non-goals, and success test before
+            production expands.
+          </p>
+          <div className="loop-mini-flow" aria-hidden="true">
+            <span className="loop-signal-chip">real signal</span>
+            <b>→</b>
+            <span className="loop-decision-chip">
+              one decision
+              <small>+ success test</small>
+            </span>
+          </div>
+        </article>
 
-        <g className="loop-output-dots" aria-hidden="true">
-          <circle cx="36" cy="98" r="5" />
-          <circle cx="36" cy="166" r="5" />
-          <circle cx="36" cy="236" r="5" />
-          <circle cx="36" cy="306" r="5" />
-          <circle cx="36" cy="376" r="5" />
-        </g>
+        <article className="living-loop-card">
+          <CardHeader number="02" label="Fan out" owner="Agents accelerate" />
+          <h3>Run useful work in parallel.</h3>
+          <p>
+            One shared brief coordinates research, product, design, engineering,
+            and QA without losing intent.
+          </p>
+          <div className="loop-fanout" aria-hidden="true">
+            <span className="loop-brief-chip">shared brief</span>
+            <div className="loop-agent-stack">
+              {["research", "product", "build", "QA"].map((label, index) => (
+                <span
+                  key={label}
+                  className="loop-agent-node"
+                  style={{ "--loop-node-index": index } as CSSProperties}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </article>
 
-        <path className="loop-selected loop-flow" d="M36 236 C166 234 224 240 320 246" fill="none" strokeLinecap="round" />
-        <path className="loop-gate-glow" d="M364 168 L326 324" fill="none" strokeLinecap="round" />
-        <path className="loop-gate" d="M364 168 L326 324" fill="none" strokeLinecap="round" />
+        <article className="living-loop-card living-loop-gate-card">
+          <CardHeader number="03" label="Review" owner="TasteLoop gate" />
+          <h3>Many outputs. One deliberate direction.</h3>
+          <p>
+            Nam makes the final call. A trusted long-running team adds depth
+            where the outcome needs it.
+          </p>
+          <div className="loop-gate-diagram" aria-hidden="true">
+            <div className="loop-option-stack">
+              <span>option A</span>
+              <span>option B</span>
+              <span>option C</span>
+            </div>
+            <strong className="loop-gate-symbol">/</strong>
+            <span className="loop-slice-chip">
+              working slice
+              <small>approved to test</small>
+            </span>
+          </div>
+        </article>
 
-        <path
-          className="loop-reality loop-flow"
-          d="M352 246 C456 246 486 162 582 170 C684 178 704 292 637 350 C578 400 458 372 446 292 C439 246 476 217 522 225"
-          fill="none"
-          strokeLinecap="round"
-          markerEnd="url(#loop-arrow)"
-        />
-        <path
-          className="loop-return loop-flow"
-          d="M522 225 C469 214 428 226 352 252"
-          fill="none"
-          strokeLinecap="round"
-          markerEnd="url(#loop-arrow)"
-        />
-
-        <g className="loop-node">
-          <circle cx="582" cy="170" r="17" />
-          <circle cx="582" cy="170" r="5" className="loop-node-core" />
-        </g>
-        <g className="loop-node">
-          <circle cx="637" cy="350" r="17" />
-          <circle cx="637" cy="350" r="5" className="loop-node-core" />
-        </g>
-
-        <g className="loop-memory" aria-hidden="true">
-          <rect x="456" y="199" width="74" height="36" rx="18" />
-          <path d="M476 211 v12 M482 211 v12 M488 211 v12" />
-        </g>
-
-        <g className="loop-labels">
-          <text x="36" y="58">agents expand</text>
-          <text x="284" y="358">Nam reviews</text>
-          <text x="374" y="184">decision gate</text>
-          <text x="548" y="126">reality corrects</text>
-          <text x="510" y="436">stronger next pass</text>
-          <text x="456" y="262">system memory</text>
-        </g>
-      </svg>
-      <div className="living-loop-mobile-key" aria-hidden="true">
-        <span><i>01</i> Agents expand</span>
-        <span><i>/</i> Nam decides</span>
-        <span><i>03</i> Reality corrects</span>
-        <span><i>04</i> System remembers</span>
+        <article className="living-loop-card">
+          <CardHeader number="04" label="Close" owner="Reality decides" />
+          <h3>Let evidence strengthen the system.</h3>
+          <p>
+            Real use corrects the choice. The correction becomes context, a
+            test, or a skill for the next pass.
+          </p>
+          <div className="loop-reality-diagram" aria-hidden="true">
+            <div>
+              <span>release</span>
+              <b>→</b>
+              <span>real use</span>
+              <b>→</b>
+              <span className="loop-evidence-chip">evidence</span>
+            </div>
+            <p>
+              correction <b>→</b> system memory <b>↺</b>
+            </p>
+          </div>
+        </article>
       </div>
-      <figcaption className="sr-only">
-        Agents expand the option space. Human judgment chooses what crosses the gate. Reality corrects the choice, and the correction strengthens the next loop.
+
+      <ol className="living-loop-sequence" aria-label="TasteLoop stages">
+        {sequence.map((stage, index) => (
+          <li key={stage}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            {stage}
+          </li>
+        ))}
+      </ol>
+
+      <figcaption id="living-loop-caption">
+        Agents multiply the making. Nam and the team protect intent and quality.
+        Real-world evidence decides what survives, and every correction improves
+        the next loop.
       </figcaption>
     </figure>
+  );
+}
+
+function CardHeader({
+  number,
+  label,
+  owner,
+}: {
+  number: string;
+  label: string;
+  owner: string;
+}) {
+  return (
+    <div className="living-loop-card-header">
+      <p>
+        <span>{number}</span>
+        {label}
+      </p>
+      <small>{owner}</small>
+    </div>
   );
 }

@@ -28,7 +28,6 @@ export function Nav() {
 
   if (isImmersive(pathname ?? "")) {
     const hasQuery = searchParams.toString().length > 0;
-    console.log("hasQuery: ", hasQuery);
     const isAnimations = (pathname ?? "").startsWith("/animations");
     return (
       <motion.div
@@ -104,6 +103,7 @@ export function Nav() {
           <div className="flex items-center gap-1.5">
             <Link
               href={PRIMARY_CTA.href}
+              data-analytics-location="nav"
               className="rounded-full bg-loop px-3.5 py-2.5 text-xs font-semibold text-ink transition hover:bg-loop/90 sm:px-4 sm:text-sm"
             >
               <span className="sm:hidden">{PRIMARY_CTA.compactLabel}</span>

@@ -25,17 +25,21 @@ export const BRAND = {
   siteUrl: inferredSiteUrl,
   legacySiteUrl: "https://vibetoreal.dev",
   email: "mailnamnv@gmail.com",
-  positioning: "A founder-led product partner, amplified by agents.",
+  positioning: "A founder-led, team-backed product partner—amplified by agents.",
   headline: "The difference is the loop.",
   idea: "Human taste, built into every loop.",
   description:
-    "TasteLoop is Nam Nguyen's product operating system: founder-led direction and quality, coordinated agent-accelerated research, design, engineering and QA, and real-world evidence looped into better products.",
+    "TasteLoop is Nam Nguyen's product operating system: founder-led direction, a trusted team with more than a decade of shared context, coordinated agent speed, and real-world evidence looped into better products.",
   socialDescription:
-    "Founder-led product direction, coordinated agent speed, and real-world evidence—looped into better products.",
+    "Founder-led direction, a trusted long-running team, coordinated agent speed, and real-world evidence—looped into better products.",
   founder: {
     name: "Nam Nguyen",
     role: "Founder · Design Engineer",
+    experience:
+      "More than ten years building and shipping products across business, product, design, engineering, QA, launch, and growth.",
   },
+  team:
+    "A trusted core team has worked alongside Nam for more than ten years, preserving context across business, technology, AI, and the systems behind the work.",
 } as const;
 
 export const NAV_LINKS = [
@@ -49,12 +53,12 @@ export const OFFERS: Offer[] = [
   {
     id: "first-loop",
     name: "First Loop",
-    price: "$2,500",
-    priceAmount: 2500,
+    price: "$980",
+    priceAmount: 980,
     timeline: "Delivered in 3 working days",
     promise: "Turn one hard product decision into working evidence.",
     purpose:
-      "I frame one decision, make the smallest useful product slice, and leave you with evidence-backed direction for what should happen next.",
+      "Nam frames one decision, directs the smallest useful product slice, and leaves you with evidence-backed direction for what should happen next.",
     includes: [
       "One decision brief, constraints, and success test",
       "One testable prototype or critical working slice",
@@ -64,7 +68,7 @@ export const OFFERS: Offer[] = [
     ],
     cta: "Start a First Loop",
     note:
-      "Begin a Product Loop within 14 days of delivery and the full $2,500 First Loop fee is credited to that first 30-day cycle.",
+      "Begin a Product Loop within 14 days of delivery and the full $980 First Loop fee is credited to that first 30-day cycle.",
     featured: true,
   },
   {
@@ -75,7 +79,7 @@ export const OFFERS: Offer[] = [
     timeline: "One 30-day product cycle",
     promise: "Ship and test one important product outcome.",
     purpose:
-      "Nam owns the direction, trade-offs, and quality while a coordinated agent system accelerates the work and evidence determines the next move.",
+      "Nam owns the direction, trade-offs, and quality. A trusted team adds depth, coordinated agents accelerate the work, and evidence determines the next move.",
     includes: [
       "One named outcome and explicit success test",
       "End-to-end product direction and execution",
@@ -94,6 +98,8 @@ export const WORK_MODEL = {
     "Active partners receive at least 30 days' notice if TasteLoop cannot continue, except for non-payment or material breach.",
   ownership:
     "Code, accounts, design files, decisions, runbooks, and release history live in tools you own from day one, so continuation or handoff is straightforward.",
+  delivery:
+    "Nam leads every engagement and holds the final quality gate. A trusted core team with more than ten years of shared working context contributes where it improves the outcome; coordinated agents accelerate the work.",
   partnership:
     "Occasionally a Product Loop becomes a deeper product partnership. That starts after paid work and real customer signal; equity never replaces a workable cash budget.",
   partnershipPrompt:

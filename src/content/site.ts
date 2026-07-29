@@ -93,7 +93,7 @@ export const PRINCIPLES = [
   "Agents make. Humans decide.",
   "Reality corrects the loop.",
   "Every correction strengthens the system.",
-  "Building became faster. Choosing became more important.",
+  "AI made building faster. Choosing what should ship matters more.",
   "Roles remain. Handoffs weaken. Ownership becomes stronger.",
   "More output is not the goal. Better products are.",
 ] as const;

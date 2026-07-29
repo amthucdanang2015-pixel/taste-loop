@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
-import { BRAND } from "@/config/brand";
+import { type OfferId } from "@/config/brand";
+import { isOfferId, trackEvent } from "@/lib/analytics";
+import { EmailNamButton } from "@/components/EmailNamButton";
 
 export interface SelectOption { value: string; label: string }
 
@@ -19,6 +21,44 @@ export interface Field {
 }
 
 type FormStatus = "idle" | "submitting" | "ok" | "error";
+type IntakeField =
+  | "decision"
+  | "name"
+  | "email"
+  | "engagement"
+  | "stage"
+  | "url";
+
+const intakeFields = new Set<IntakeField>([
+  "decision",
+  "name",
+  "email",
+  "engagement",
+  "stage",
+  "url",
+]);
+
+function isIntakeField(value: string): value is IntakeField {
+  return intakeFields.has(value as IntakeField);
+}
+
+function analyticsErrorCategory(error?: string) {
+  switch (error) {
+    case "lead_capture_unconfigured":
+      return "unconfigured" as const;
+    case "lead_backend_unavailable":
+    case "lead_backend_rejected":
+      return "backend" as const;
+    case "lead_rate_limited":
+      return "rate_limit" as const;
+    case "idempotency_conflict":
+      return "conflict" as const;
+    case "lead_notification_failed":
+      return "notification" as const;
+    default:
+      return "unknown" as const;
+  }
+}
 
 function requiredMessage(field: Field) {
   switch (field.name) {
@@ -89,10 +129,39 @@ export function LeadForm({
   const [persisted, setPersisted] = useState(false);
   const [showEmailFallback, setShowEmailFallback] = useState(false);
   const submissionId = useRef<string | null>(null);
+  const intakeStarted = useRef(false);
+  const leadGenerated = useRef(false);
+
+  function resolvedOffer(nextValues = values): OfferId | null {
+    const candidate =
+      leadTypeField && nextValues[leadTypeField]
+        ? nextValues[leadTypeField]
+        : leadType;
+    return isOfferId(candidate) ? candidate : null;
+  }
+
+  function trackLeadOnce(
+    offerId: OfferId,
+    notificationStatus: "accepted" | "delayed",
+  ) {
+    if (leadGenerated.current) return;
+    leadGenerated.current = true;
+    trackEvent("generate_lead", {
+      offer_id: offerId,
+      notification_status: notificationStatus,
+    });
+  }
 
   function set(name: string, value: string) {
-    setValues((current) => ({ ...current, [name]: value }));
+    const nextValues = { ...values, [name]: value };
+    setValues(nextValues);
+    const offerId = resolvedOffer(nextValues);
+    if (!intakeStarted.current && offerId) {
+      intakeStarted.current = true;
+      trackEvent("intake_start", { offer_id: offerId });
+    }
     submissionId.current = null;
+    leadGenerated.current = false;
     setPersisted(false);
     setShowEmailFallback(false);
     setFieldErrors((current) => {
@@ -148,6 +217,13 @@ export function LeadForm({
       setStatus("error");
       setError("A few details need attention before I can send this.");
       const firstField = fields.find((field) => validationErrors[field.name]);
+      const offerId = resolvedOffer();
+      if (offerId && firstField && isIntakeField(firstField.name)) {
+        trackEvent("intake_validation_error", {
+          offer_id: offerId,
+          first_invalid_field: firstField.name,
+        });
+      }
       if (firstField) {
         window.requestAnimationFrame(() => {
           document.getElementById(`${leadType}-${firstField.name}`)?.focus();
@@ -159,6 +235,10 @@ export function LeadForm({
     setFieldErrors({});
     setStatus("submitting");
     const resolvedLeadType = leadTypeField && values[leadTypeField] ? values[leadTypeField] : leadType;
+    const offerId = isOfferId(resolvedLeadType) ? resolvedLeadType : null;
+    if (offerId) {
+      trackEvent("intake_submit_attempt", { offer_id: offerId });
+    }
     submissionId.current ??= crypto.randomUUID();
     const stableSubmissionId = submissionId.current;
     let timeout: number | undefined;
@@ -180,10 +260,18 @@ export function LeadForm({
         ok?: boolean;
         error?: string;
         field?: string;
+        id?: string;
         persisted?: boolean;
       };
       if (!response.ok || body.ok !== true) {
         if (body.persisted === true) {
+          if (offerId) {
+            trackLeadOnce(offerId, "delayed");
+            trackEvent("intake_submit_error", {
+              offer_id: offerId,
+              error_category: "notification",
+            });
+          }
           setPersisted(true);
           setShowEmailFallback(false);
           setStatus("error");
@@ -192,6 +280,12 @@ export function LeadForm({
         }
         if (body.field && fields.some((field) => field.name === body.field)) {
           const invalidField = fields.find((field) => field.name === body.field)!;
+          if (offerId && isIntakeField(body.field)) {
+            trackEvent("intake_validation_error", {
+              offer_id: offerId,
+              first_invalid_field: body.field,
+            });
+          }
           setFieldErrors({ [body.field]: fieldMessage(invalidField, body.error) });
           setStatus("error");
           setError("One answer needs attention before I can send this.");
@@ -203,7 +297,16 @@ export function LeadForm({
         setStatus("error");
         setShowEmailFallback(true);
         setError(captureErrorMessage(body.error));
+        if (offerId) {
+          trackEvent("intake_submit_error", {
+            offer_id: offerId,
+            error_category: analyticsErrorCategory(body.error),
+          });
+        }
         return;
+      }
+      if (offerId && typeof body.id === "string") {
+        trackLeadOnce(offerId, "accepted");
       }
       setStatus("ok");
     } catch (caught) {
@@ -211,6 +314,12 @@ export function LeadForm({
       setShowEmailFallback(true);
       const timedOut =
         caught instanceof DOMException && caught.name === "AbortError";
+      if (offerId) {
+        trackEvent("intake_submit_error", {
+          offer_id: offerId,
+          error_category: timedOut ? "timeout" : "network",
+        });
+      }
       setError(
         timedOut
           ? "The connection timed out. Your answers are still here. Try again."
@@ -283,12 +392,10 @@ export function LeadForm({
           <div>
             <p>{error}</p>
             {showEmailFallback && !persisted && (
-              <a
+              <EmailNamButton
                 className="mt-1.5 inline-flex font-medium text-loop underline decoration-loop/40 underline-offset-2"
-                href={`mailto:${BRAND.email}`}
-              >
-                Email Nam instead
-              </a>
+                label="Email Nam instead"
+              />
             )}
           </div>
         </div>
@@ -300,7 +407,7 @@ export function LeadForm({
           {status === "submitting" ? "Sending…" : persisted ? "Retry notification" : status === "error" ? "Try again" : submitLabel}
         </button>
         <p aria-live="polite" className="text-xs text-white/35">
-          {status === "submitting" ? "Securely saving your decision…" : "Private intake. No automated sales sequence."}
+          {status === "submitting" ? "Securely saving your decision…" : "Private intake. Analytics never receives your answers."}
         </p>
       </div>
     </form>

@@ -53,9 +53,33 @@ const productionVariables = [
   },
 ];
 
+const vercelBin = process.env.VERCEL_BIN || "vercel";
+const analyticsResult = spawnSync(
+  vercelBin,
+  [
+    "project",
+    "web-analytics",
+    project.projectName,
+    "--format",
+    "json",
+  ],
+  {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  },
+);
+
+if (analyticsResult.error) throw analyticsResult.error;
+if (analyticsResult.status !== 0) {
+  throw new Error(
+    `Vercel rejected Web Analytics enablement for ${project.projectName}`,
+  );
+}
+
 for (const variable of productionVariables) {
   const result = spawnSync(
-    process.env.VERCEL_BIN || "vercel",
+    vercelBin,
     [
       "env",
       "add",
@@ -80,5 +104,5 @@ for (const variable of productionVariables) {
 }
 
 console.log(
-  `Configured ${productionVariables.length} production variables for ${project.projectName}. Secret values were not printed.`,
+  `Enabled Web Analytics and configured ${productionVariables.length} production variables for ${project.projectName}. Secret values were not printed.`,
 );
