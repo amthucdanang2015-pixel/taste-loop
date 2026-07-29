@@ -435,7 +435,7 @@ export function AnimationStudio() {
         {/* Center / Title: Offset pl-36 so it doesn't overlap the logo pill */}
         <div className="flex items-center gap-1 overflow-hidden pl-36 pr-2 font-mono text-xs font-semibold text-white/90 sm:pl-40">
           <span className="truncate">
-            {activeType ? (ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType) : "Animation Index"}
+            {activeType ? (ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType) : ""}
           </span>
         </div>
 
