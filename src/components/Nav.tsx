@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
 
 export function Nav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { scrollY } = useScroll();
   const reduce = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
@@ -26,11 +27,13 @@ export function Nav() {
   }, [open]);
 
   if (isImmersive(pathname ?? "")) {
+    const hasQuery = searchParams.toString().length > 0;
+    console.log("hasQuery: ", hasQuery);
     const isAnimations = (pathname ?? "").startsWith("/animations");
     return (
       <motion.div
         className={
-          isAnimations
+          !hasQuery && isAnimations
             ? "fixed left-16 top-2.5 z-50 lg:left-4 lg:top-4"
             : "fixed left-3 top-3 z-50 sm:left-4 sm:top-4"
         }
