@@ -43,6 +43,7 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
 :focus:not(:focus-visible) {
   outline: none;
 }
@@ -61,6 +62,7 @@ body {
   font-weight: 600;
   transition: top 0.15s ease;
 }
+
 .skip-link:focus-visible {
   top: 16px;
 }
@@ -69,17 +71,21 @@ body {
 html {
   scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
+
 ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 99px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
@@ -89,17 +95,21 @@ html {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
+
 .scroll-slim::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+
 .scroll-slim::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .scroll-slim::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.07);
   border-radius: 99px;
 }
+
 .scroll-slim:hover::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -115,8 +125,15 @@ html {
 }
 
 @keyframes gradpan {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .text-gradient {
@@ -128,11 +145,9 @@ html {
 
 .card-sheen {
   background:
-    radial-gradient(
-      600px circle at var(--mx, 50%) var(--my, 50%),
+    radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%),
       rgba(217, 255, 99, 0.12),
-      transparent 40%
-    );
+      transparent 40%);
 }
 
 /* TasteLoop identity ------------------------------------------------------ */
@@ -148,7 +163,7 @@ html {
 .brand-compact-mark {
   display: inline-flex;
   align-items: baseline;
-  font-size: 0.78rem;
+  font-size: 0.5rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1;
@@ -173,13 +188,31 @@ html {
 }
 
 @keyframes wordmark-enter {
-  from { opacity: 0; transform: translateY(0.45em); filter: blur(4px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
 @keyframes wordmark-gate {
-  0%, 100% { color: var(--color-loop); transform: scaleY(1); }
-  50% { color: var(--color-signal); transform: scaleY(1.22); }
+
+  0%,
+  100% {
+    color: var(--color-loop);
+    transform: scaleY(1);
+  }
+
+  50% {
+    color: var(--color-signal);
+    transform: scaleY(1.22);
+  }
 }
 
 /* Living Loop: motion describes selection, feedback, and continuity. */
@@ -198,7 +231,7 @@ html {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: linear-gradient(rgba(242,240,232,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(242,240,232,.035) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(242, 240, 232, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 240, 232, .035) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: linear-gradient(to bottom, black, transparent 86%);
 }
@@ -212,16 +245,39 @@ html {
 }
 
 .loop-candidates path:nth-child(1),
-.loop-candidates path:nth-child(5) { opacity: 0.45; }
-.loop-candidates path:nth-child(2),
-.loop-candidates path:nth-child(4) { opacity: 0.72; }
-.loop-candidates path:nth-child(2) { animation-delay: 70ms; }
-.loop-candidates path:nth-child(3) { animation-delay: 140ms; }
-.loop-candidates path:nth-child(4) { animation-delay: 210ms; }
-.loop-candidates path:nth-child(5) { animation-delay: 280ms; }
+.loop-candidates path:nth-child(5) {
+  opacity: 0.45;
+}
 
-.loop-output-dots circle { fill: rgba(242, 240, 232, 0.38); }
-.loop-output-dots circle:nth-child(3) { fill: var(--color-loop); filter: url(#loop-soft-glow); }
+.loop-candidates path:nth-child(2),
+.loop-candidates path:nth-child(4) {
+  opacity: 0.72;
+}
+
+.loop-candidates path:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.loop-candidates path:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.loop-candidates path:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.loop-candidates path:nth-child(5) {
+  animation-delay: 280ms;
+}
+
+.loop-output-dots circle {
+  fill: rgba(242, 240, 232, 0.38);
+}
+
+.loop-output-dots circle:nth-child(3) {
+  fill: var(--color-loop);
+  filter: url(#loop-soft-glow);
+}
 
 .loop-selected {
   stroke: var(--color-loop);
@@ -270,12 +326,15 @@ html {
   animation: loop-return-pass 6.4s var(--ease-loop) infinite;
 }
 
-.loop-node > circle:first-child {
+.loop-node>circle:first-child {
   fill: #151512;
   stroke: rgba(255, 122, 89, 0.7);
   stroke-width: 2;
 }
-.loop-node-core { fill: var(--color-signal); }
+
+.loop-node-core {
+  fill: var(--color-signal);
+}
 
 .loop-labels {
   fill: rgba(242, 240, 232, 0.48);
@@ -306,39 +365,120 @@ html {
 }
 
 @keyframes loop-candidates-in {
-  0%, 4% { stroke-dashoffset: 420; opacity: 0; }
-  18%, 84% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+
+  0%,
+  4% {
+    stroke-dashoffset: 420;
+    opacity: 0;
+  }
+
+  18%,
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes loop-selection {
-  0%, 16% { stroke-dashoffset: 360; opacity: 0; }
-  30%, 84% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+
+  0%,
+  16% {
+    stroke-dashoffset: 360;
+    opacity: 0;
+  }
+
+  30%,
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes loop-gate-pulse {
-  0%, 24% { opacity: 0.35; }
-  34%, 78% { opacity: 1; }
-  100% { opacity: 0.35; }
+
+  0%,
+  24% {
+    opacity: 0.35;
+  }
+
+  34%,
+  78% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.35;
+  }
 }
 
 @keyframes loop-reality-pass {
-  0%, 30% { stroke-dashoffset: 520; opacity: 0; }
-  55%, 84% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+
+  0%,
+  30% {
+    stroke-dashoffset: 520;
+    opacity: 0;
+  }
+
+  55%,
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes loop-return-pass {
-  0%, 52% { stroke-dashoffset: 520; opacity: 0; }
-  70%, 84% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+
+  0%,
+  52% {
+    stroke-dashoffset: 520;
+    opacity: 0;
+  }
+
+  70%,
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes loop-memory-in {
-  0%, 58% { opacity: 0; transform: translateY(4px); }
-  69%, 84% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(0); }
+
+  0%,
+  58% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  69%,
+  84% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
 }
 
 .section-rule {
@@ -478,6 +618,7 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -486,6 +627,7 @@ html {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+
   .loop-candidates path,
   .loop-selected,
   .loop-flow {

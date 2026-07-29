@@ -26,9 +26,14 @@ export function Nav() {
   }, [open]);
 
   if (isImmersive(pathname ?? "")) {
+    const isAnimations = (pathname ?? "").startsWith("/animations");
     return (
       <motion.div
-        className="fixed left-3 top-3 z-50 sm:left-4 sm:top-4"
+        className={
+          isAnimations
+            ? "fixed left-16 top-2.5 z-50 lg:left-4 lg:top-4"
+            : "fixed left-3 top-3 z-50 sm:left-4 sm:top-4"
+        }
         initial={reduce ? false : { y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: reduce ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -36,9 +41,19 @@ export function Nav() {
         <Link
           href="/"
           aria-label="TasteLoop home"
-          className="flex items-center rounded-full border border-white/10 bg-black/70 px-3.5 py-2 shadow-2xl backdrop-blur-xl transition hover:border-loop/40"
+          className="
+    flex h-10 items-center justify-center
+    rounded-full
+    border border-white/10
+    bg-black/70
+    px-2
+    shadow-2xl
+    backdrop-blur-xl
+    transition
+    hover:border-loop/40
+  "
         >
-          <Wordmark />
+          <Wordmark className="block h-3 w-auto" />
         </Link>
       </motion.div>
     );

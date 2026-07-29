@@ -29,9 +29,10 @@ test("AnimationStudio.tsx left sidebar width and mobile responsiveness", async (
   // Verify widened left sidebar grid definition (280px)
   assert.match(studio, /lg:grid-cols-\[280px_1fr\]/, "studio must use 280px left rail width");
 
-  // Verify mobile responsive state and back button
-  assert.match(studio, /mobileView/, "studio must track mobileView state");
-  assert.match(studio, /Back to Categories/, "studio must render Back to Categories mobile button");
+  // Verify mobile responsive drawer state and buttons
+  assert.match(studio, /drawerOpen/, "studio must track drawerOpen state");
+  assert.match(studio, /mobile-nav-drawer/, "studio must render mobile nav drawer");
+  assert.match(studio, /Open navigation drawer/, "studio must render drawer toggle button");
 
   // Verify single column grid on mobile screens (1 row 1 item)
   assert.match(studio, /grid grid-cols-1[^\n]*lg:grid-cols-3/, "studio grid must use 1 column on mobile and 3 columns on desktop");
@@ -40,9 +41,8 @@ test("AnimationStudio.tsx left sidebar width and mobile responsiveness", async (
   assert.match(studio, /w-full flex-1/, "body container must fill full width on mobile");
   assert.match(studio, /min-h-\[340px\]/, "detail live stage must enforce min-height on mobile");
 
-  // Verify active category state and mobile back button URL navigation
+  // Verify active category state
   assert.match(studio, /isCategoryActive/, "studio must calculate active category using isCategoryActive");
-  assert.match(studio, /handleBackToCategories/, "studio must sync URL on mobile back button click");
 });
 
 test("Animation search items cover both ANIM_ITEMS and TEXT_EFFECT_TEMPLATES", async () => {

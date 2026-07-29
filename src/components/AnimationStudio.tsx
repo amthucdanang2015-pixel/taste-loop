@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "framer-motion";
 import { copyText } from "@/lib/copyText";
-import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor, Search, ArrowRight, X, Code2, Plug, Info } from "lucide-react";
+import { Check, Copy, Sparkles, Wrench, ArrowLeft, RotateCw, Monitor, Search, ArrowRight, X, Code2, Plug, Info, Menu } from "lucide-react";
 import {
   TEXT_EFFECT_TEMPLATES,
   TextEffectRenderer,
@@ -76,27 +76,9 @@ export function AnimationStudio() {
   const typeParam = searchParams.get("type");
   const itemParam = searchParams.get("item");
 
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(media.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, []);
-
-  const [mobileView, setMobileView] = useState<"categories" | "items">(() =>
-    itemParam || typeParam ? "items" : "categories"
-  );
-
-  useEffect(() => {
-    if (itemParam || typeParam) {
-      setMobileView("items");
-    } else {
-      setMobileView("categories");
-    }
-  }, [itemParam, typeParam]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
 
   const selectedId = useMemo(() => {
     if (!itemParam) return null;
@@ -117,9 +99,9 @@ export function AnimationStudio() {
       const animItem = ANIM_ITEMS.find((a) => a.slug === selectedId);
       if (animItem) return animItem.category;
     }
-    // On desktop with no explicit type, return null to show discovery mode
-    return isDesktop ? null : "gallery";
-  }, [typeParam, selectedId, isDesktop]);
+    // When no explicit type or selected item, return null to show discovery mode on all devices
+    return null;
+  }, [typeParam, selectedId]);
 
   const isCategoryActive = useCallback(
     (typeId: string) => {
@@ -156,15 +138,9 @@ export function AnimationStudio() {
     (typeId: string) => {
       const nextUrl = createQueryString(typeId, null);
       router.push(nextUrl, { scroll: false });
-      setMobileView("items");
     },
     [createQueryString, router]
   );
-
-  const handleBackToCategories = useCallback(() => {
-    const nextUrl = createQueryString(null, null);
-    router.push(nextUrl, { scroll: false });
-  }, [createQueryString, router]);
 
   // Track whether the current item detail was opened from the discovery page
   // (no active type selected) so we can return there on close.
@@ -263,7 +239,6 @@ export function AnimationStudio() {
       router.push(nextUrl, { scroll: false });
       setSearchModalOpen(false);
       setModalSearchQuery("");
-      setMobileView("items");
     },
     [createQueryString, router]
   );
@@ -320,32 +295,33 @@ export function AnimationStudio() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedId, handleCloseDetail]);
 
-  const scrollPosRef = useRef<number>(0);
-  const prevSelectedIdRef = useRef<string | null>(selectedId);
-  const prevActiveTypeRef = useRef<string>(activeType);
 
   useEffect(() => {
-    if (prevActiveTypeRef.current !== activeType) {
-      prevActiveTypeRef.current = activeType;
-      scrollPosRef.current = 0;
-      window.scrollTo({ top: 0, behavior: "instant" });
-      return;
-    }
-
-    if (prevSelectedIdRef.current === null && selectedId !== null) {
-      scrollPosRef.current = window.scrollY;
-      document.body.style.overflow = "hidden";
-    } else if (prevSelectedIdRef.current !== null && selectedId === null) {
-      document.body.style.overflow = "";
-      window.scrollTo({ top: scrollPosRef.current, behavior: "instant" });
-    } else if (selectedId !== null) {
+    if (drawerOpen || selectedId !== null) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
+  }, [drawerOpen, selectedId]);
 
-    prevSelectedIdRef.current = selectedId;
-  }, [selectedId, activeType]);
+  useEffect(() => {
+    if (drawerOpen) {
+      setTimeout(() => drawerCloseRef.current?.focus(), 50);
+    } else {
+      menuButtonRef.current?.focus();
+    }
+  }, [drawerOpen]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setDrawerOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [drawerOpen]);
 
   useEffect(() => {
     return () => {
@@ -372,76 +348,223 @@ export function AnimationStudio() {
         getProps: (x: AnimItem) => ({ item: x }),
       }
       : activeType === "gallery"
-      ? {
-        items: ANIM_ITEMS.filter((a) => a.category === activeType),
-        Card: EntranceCard as any,
-        Detail: GalleryExpandedDetail as any,
-        selected: selectedAnimItem,
-        key: "slug",
-        getProps: (x: AnimItem) => ({ item: x }),
-      }
-      : activeType === "border"
         ? {
           items: ANIM_ITEMS.filter((a) => a.category === activeType),
           Card: EntranceCard as any,
-          Detail: BorderExpandedDetail as any,
+          Detail: GalleryExpandedDetail as any,
           selected: selectedAnimItem,
           key: "slug",
           getProps: (x: AnimItem) => ({ item: x }),
         }
-        : activeType === "button"
+        : activeType === "border"
           ? {
             items: ANIM_ITEMS.filter((a) => a.category === activeType),
             Card: EntranceCard as any,
-            Detail: ButtonExpandedDetail as any,
+            Detail: BorderExpandedDetail as any,
             selected: selectedAnimItem,
             key: "slug",
             getProps: (x: AnimItem) => ({ item: x }),
           }
-          : (activeType === "image" || activeType === "cursor" || activeType === "elements" || activeType === "background")
+          : activeType === "button"
             ? {
               items: ANIM_ITEMS.filter((a) => a.category === activeType),
               Card: EntranceCard as any,
-              Detail: MotionExpandedDetail as any,
+              Detail: ButtonExpandedDetail as any,
               selected: selectedAnimItem,
               key: "slug",
               getProps: (x: AnimItem) => ({ item: x }),
             }
-            : activeType === "animations"
+            : (activeType === "image" || activeType === "cursor" || activeType === "elements" || activeType === "background")
               ? {
-                items: ANIM_ITEMS.filter(
-                  (a) =>
-                    a.category === "animations" ||
-                    a.category === "entrances" ||
-                    a.category === "sequencing" ||
-                    a.category === "transforms" ||
-                    a.category === "transitions" ||
-                    a.category === "scroll" ||
-                    a.category === "spring" ||
-                    a.category === "looping" ||
-                    a.category === "polish" ||
-                    a.category === "feedback"
-                ),
+                items: ANIM_ITEMS.filter((a) => a.category === activeType),
                 Card: EntranceCard as any,
                 Detail: MotionExpandedDetail as any,
                 selected: selectedAnimItem,
                 key: "slug",
                 getProps: (x: AnimItem) => ({ item: x }),
               }
-              : {
-                items: ANIM_ITEMS.filter((a) => a.category === activeType),
-                Card: EntranceCard as any,
-                Detail: EntranceExpandedDetail as any,
-                selected: selectedAnimItem,
-                key: "slug",
-                getProps: (x: AnimItem) => ({ item: x }),
-              };
+              : activeType === "animations"
+                ? {
+                  items: ANIM_ITEMS.filter(
+                    (a) =>
+                      a.category === "animations" ||
+                      a.category === "entrances" ||
+                      a.category === "sequencing" ||
+                      a.category === "transforms" ||
+                      a.category === "transitions" ||
+                      a.category === "scroll" ||
+                      a.category === "spring" ||
+                      a.category === "looping" ||
+                      a.category === "polish" ||
+                      a.category === "feedback"
+                  ),
+                  Card: EntranceCard as any,
+                  Detail: MotionExpandedDetail as any,
+                  selected: selectedAnimItem,
+                  key: "slug",
+                  getProps: (x: AnimItem) => ({ item: x }),
+                }
+                : {
+                  items: ANIM_ITEMS.filter((a) => a.category === activeType),
+                  Card: EntranceCard as any,
+                  Detail: EntranceExpandedDetail as any,
+                  selected: selectedAnimItem,
+                  key: "slug",
+                  getProps: (x: AnimItem) => ({ item: x }),
+                };
 
   return (
     <div className="block min-h-screen bg-[#0d0c14] text-white lg:grid lg:grid-cols-[280px_1fr]">
-      {/* ── Left Rail ──────────────────────────────────────────────────────── */}
-      <aside className={`scroll-slim w-full border-b border-line lg:w-auto lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r ${mobileView === "items" ? "hidden lg:block" : "block"
-        }`}>
+      {/* ── Mobile Top Fixed Navigation Bar ──────────────────────────────────── */}
+      <header className="fixed top-0 inset-x-0 z-40 flex h-16 items-center justify-between border-b border-white/10 bg-[#0d0c14]/95 px-3 backdrop-blur-md lg:hidden">
+        {/* Far left: Menu button */}
+        <div className="flex items-center">
+          <button
+            ref={menuButtonRef}
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open navigation drawer"
+            aria-expanded={drawerOpen}
+            aria-controls="mobile-nav-drawer"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white shadow-sm transition active:scale-95 hover:bg-white/20 hover:border-white/30 z-50"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Center / Title: Offset pl-36 so it doesn't overlap the logo pill */}
+        <div className="flex items-center gap-1 overflow-hidden pl-36 pr-2 font-mono text-xs font-semibold text-white/90 sm:pl-40">
+          <span className="truncate">
+            {activeType ? (ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType) : "Animation Index"}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setSearchModalOpen(true);
+            setModalSearchQuery("");
+            setHighlightedIndex(0);
+          }}
+          aria-label="Search components"
+          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80 transition active:scale-95 hover:bg-white/10 hover:text-white"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+      </header>
+
+      {/* ── Mobile Off-Canvas Drawer ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden="true"
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm lg:hidden"
+            />
+
+            {/* Drawer Content */}
+            <motion.div
+              id="mobile-nav-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Animation categories"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed inset-y-0 left-0 z-50 flex w-[82vw] max-w-[320px] flex-col border-r border-white/15 bg-[#12111c] shadow-2xl lg:hidden focus:outline-none"
+              tabIndex={-1}
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-white/90">
+                  Animation Index
+                </span>
+                <button
+                  ref={drawerCloseRef}
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  aria-label="Close navigation drawer"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Drawer Body (Scrollable) */}
+              <div className="scroll-slim flex-1 overflow-y-auto p-4">
+                {/* Search Trigger Input Box */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      setSearchModalOpen(true);
+                      setModalSearchQuery("");
+                      setHighlightedIndex(0);
+                    }}
+                    className="group flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-white/20 hover:bg-white/[0.07]"
+                  >
+                    <div className="flex items-center gap-2 text-xs text-white/50 group-hover:text-white/70">
+                      <Search className="h-3.5 w-3.5 shrink-0" />
+                      <span className="font-mono">Search Components...</span>
+                    </div>
+                    <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40">
+                      ⌘ + K
+                    </kbd>
+                  </button>
+                </div>
+
+                <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                  Animation Type
+                </p>
+                <nav className="mt-3 flex flex-col gap-0.5">
+                  {ANIMATION_TYPES.map((t) => {
+                    const on = isCategoryActive(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          if (!t.badge) {
+                            handleSelectCategory(t.id);
+                            setDrawerOpen(false);
+                          }
+                        }}
+                        disabled={!!t.badge}
+                        className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${on
+                          ? "bg-white/[0.07] font-medium text-white"
+                          : t.badge
+                            ? "cursor-not-allowed text-white/30"
+                            : "text-white/55 hover:bg-white/[0.04] hover:text-white/85"
+                          }`}
+                      >
+                        {on && (
+                          <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
+                        )}
+                        <span className="relative">{t.label}</span>
+                        {t.badge && (
+                          <span className="relative rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white/25">
+                            {t.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Desktop Left Rail ────────────────────────────────────────────────── */}
+      <aside className="scroll-slim hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:w-[280px] lg:shrink-0 lg:overflow-y-auto lg:border-r border-line">
         <div className="px-4 pb-6 pt-20 lg:pt-24">
           {/* Search Trigger Input Box */}
           <div className="mb-4">
@@ -503,27 +626,14 @@ export function AnimationStudio() {
       </aside>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div className={`relative min-w-0 w-full flex-1 ${mobileView === "categories" ? "hidden lg:block" : "block"
-        }`}>
-        {/* Mobile Header Bar */}
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pt-20 lg:hidden">
-          <button
-            onClick={handleBackToCategories}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to Categories
-          </button>
-          <span className="font-mono text-xs font-semibold text-white/50">
-            {ANIMATION_TYPES.find((t) => t.id === activeType)?.label ?? activeType}
-          </span>
-        </div>
+      <div className="relative min-w-0 w-full flex-1 pt-16 lg:pt-0">
 
         {config && config.items.length > 0 ? (
           <LayoutGroup>
             <div className="p-4 sm:p-8 lg:p-16">
               {/* Discovery mode header */}
               {activeType === null && (
-                <div className="mb-8 hidden lg:block">
+                <div className="mb-6 sm:mb-8">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-white/30">
                     Animation Index — All Categories
                   </p>
@@ -531,7 +641,7 @@ export function AnimationStudio() {
                     Browse the collection
                   </h2>
                   <p className="mt-1 font-mono text-xs text-white/40">
-                    Select a category from the left to filter, or click any item to explore it.
+                    Select a category from the menu to filter, or click any item to explore it.
                   </p>
                 </div>
               )}
