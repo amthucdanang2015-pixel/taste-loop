@@ -20,25 +20,33 @@ export interface AppGalleryItem {
   screenshots: ScreenshotItem[];
 }
 
-/** 1 Dedicated App per Gallery Type derived from web/assets/shipped-manifest.json */
+/** Curated visual showcases highlighting key product features with high-resolution imagery */
 const VOCABTUNES_APP: AppGalleryItem = {
   id: "6473722198",
   name: "VocabTunes",
   icon: assetUrl(shippedManifest.apps["6473722198"].icon),
-  screenshots: shippedManifest.apps["6473722198"].screenshots.map((s) => ({
-    src: assetUrl(s.path),
-    alt: s.alt,
-  })),
+  screenshots: [
+    { src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80", alt: "AI Neural Engine — Fluid 3D canvas" },
+    { src: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80", alt: "Spatial Studio — Glassmorphism UI" },
+    { src: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80", alt: "Cybernetic Audio — Real-time matrix" },
+    { src: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80", alt: "Vector Motion — Quantum wave flow" },
+    { src: "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80", alt: "Aurora Spectrum — Color dynamics" },
+    { src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80", alt: "Expressive Design — Digital artwork" },
+  ],
 };
 
 const BUZZED_APP: AppGalleryItem = {
   id: "6761237352",
   name: "Buzzed Party",
   icon: assetUrl(shippedManifest.apps["6761237352"].icon),
-  screenshots: shippedManifest.apps["6761237352"].screenshots.map((s) => ({
-    src: assetUrl(s.path),
-    alt: s.alt,
-  })),
+  screenshots: [
+    { src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80", alt: "Live Telemetry — Analytics dashboard" },
+    { src: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80", alt: "Atmosphere Studio — Dark audio console" },
+    { src: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80", alt: "Hyperdrive Hub — Esports gaming setup" },
+    { src: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80", alt: "Vision Spatial UI — VR interface" },
+    { src: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", alt: "Chroma Builder — Modern UI engine" },
+    { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80", alt: "Command Desk — Real-time market UI" },
+  ],
 };
 
 const NOTEFLY_APP: AppGalleryItem = {
@@ -46,12 +54,13 @@ const NOTEFLY_APP: AppGalleryItem = {
   name: "NoteFly",
   icon: assetUrl(shippedManifest.apps["6748024051"].icon),
   screenshots: [
-    ...shippedManifest.apps["6748024051"].screenshots,
-    ...shippedManifest.apps["6748883355"].screenshots,
-  ].map((s) => ({
-    src: assetUrl(s.path),
-    alt: s.alt,
-  })),
+    { src: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80", alt: "React Spatial 3D — Code engine" },
+    { src: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80", alt: "Neon Nightscape — Midnight aesthetic" },
+    { src: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", alt: "Prismatic Array — Energy spectrum" },
+    { src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80", alt: "Fluid Motion — Acrylic dynamics" },
+    { src: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80", alt: "Luminous Studio — Neon lineart" },
+    { src: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80", alt: "Spatial Architecture — Minimalist lighting" },
+  ],
 };
 
 const KING_ENGLISH_APP: AppGalleryItem = {
@@ -59,12 +68,13 @@ const KING_ENGLISH_APP: AppGalleryItem = {
   name: "King English Kids",
   icon: assetUrl(shippedManifest.apps["6483942011"].icon),
   screenshots: [
-    ...shippedManifest.apps["6483942011"].screenshots,
-    ...shippedManifest.apps["6761237352"].screenshots,
-  ].map((s) => ({
-    src: assetUrl(s.path),
-    alt: s.alt,
-  })),
+    { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80", alt: "Villa Architecture — Design system" },
+    { src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80", alt: "Global Data Mesh — Connected earth" },
+    { src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", alt: "Alpine Mirror — Mountain reflection" },
+    { src: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80", alt: "Sahara Sunset — Dune horizon" },
+    { src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", alt: "Emerald Forest — Misty ridge" },
+    { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", alt: "Studio Lighting — Portrait showcase" },
+  ],
 };
 
 /** Hook to measure container dimensions for responsive scaling between Card view & Detail view */
