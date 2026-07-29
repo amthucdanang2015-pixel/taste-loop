@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useResponsiveText } from "@/hooks/useResponsiveText";
 
 export interface TextEffectTemplate {
   id: string;
@@ -371,6 +372,13 @@ export function TextEffectRenderer({
   const loopCount = useAutoLoop(4000);
   const currentKey = `${replayKey ?? 0}-${loopCount}`;
 
+  // Always use responsive text hook to ensure the text scales to fit the container
+  const { containerRef, fontSize } = useResponsiveText(content, {
+    minFontSize: 12,
+    maxFontSize: options?.fontSize || 42,
+    lineHeight: options?.lineHeight || 1.15,
+  });
+
   const renderEffect = () => {
     switch (template.animationTextType) {
       case "typewriter": return <TypewriterEffect text={content} key={currentKey} />;
@@ -406,46 +414,37 @@ export function TextEffectRenderer({
       case "smoke": return <SmokeEffect text={content} key={currentKey} />;
       case "scanner": return <ScannerEffect text={content} key={currentKey} />;
       default:
-        return <span className="text-2xl font-bold text-white">{content}</span>;
+        return <span className="font-bold text-white">{content}</span>;
     }
   };
 
-  if (options) {
-    const customStyle: Record<string, string> = {};
+  const customStyle: Record<string, string> = {};
 
-    if (options.fontSize) customStyle["--custom-font-size"] = `${options.fontSize}px`;
-    if (options.fontWeight) customStyle["--custom-font-weight"] = String(options.fontWeight);
-    if (options.fontFamily) customStyle["--custom-font-family"] = options.fontFamily;
-    if (options.letterSpacing !== undefined) customStyle["--custom-letter-spacing"] = `${options.letterSpacing}px`;
-    if (options.lineHeight !== undefined) customStyle["--custom-line-height"] = String(options.lineHeight);
-    if (options.textAlign) customStyle["--custom-text-align"] = options.textAlign;
-    if (options.color) customStyle["--custom-color"] = options.color;
+  customStyle["--custom-font-size"] = `${fontSize}px`;
 
-    return (
-      <div
-        style={customStyle as React.CSSProperties}
-        className="w-full flex items-center justify-center transition-all duration-150 whitespace-pre-wrap text-inherit
-          [&_*]:[font-size:var(--custom-font-size,inherit)!important]
-          [&_*]:[font-weight:var(--custom-font-weight,inherit)!important]
-          [&_*:not([style*='transparent']):not([style*='BackgroundClip'])]:[color:var(--custom-color,inherit)]
-          [&_*]:[font-family:var(--custom-font-family,inherit)!important]
-          [&_*]:[letter-spacing:var(--custom-letter-spacing,inherit)!important]
-          [&_*]:[line-height:var(--custom-line-height,inherit)!important]
-          [&_*]:[text-align:var(--custom-text-align,inherit)!important]"
-      >
-        {renderEffect()}
-      </div>
-    );
-  }
+  if (options?.fontWeight) customStyle["--custom-font-weight"] = String(options.fontWeight);
+  if (options?.fontFamily) customStyle["--custom-font-family"] = options.fontFamily;
+  if (options?.letterSpacing !== undefined) customStyle["--custom-letter-spacing"] = `${options.letterSpacing}px`;
+  if (options?.lineHeight !== undefined) customStyle["--custom-line-height"] = String(options.lineHeight);
+  if (options?.textAlign) customStyle["--custom-text-align"] = options.textAlign;
+  if (options?.color) customStyle["--custom-color"] = options.color;
 
-  return renderEffect();
+  return (
+    <div
+      ref={containerRef}
+      style={customStyle as React.CSSProperties}
+      className="w-full h-full flex items-center justify-center transition-all duration-150 whitespace-pre-wrap text-inherit [&_*]:[font-size:var(--custom-font-size,inherit)!important] [&_*]:[font-weight:var(--custom-font-weight,inherit)!important] [&_*:not([style*='transparent']):not([style*='BackgroundClip'])]:[color:var(--custom-color,inherit)] [&_*]:[font-family:var(--custom-font-family,inherit)!important] [&_*]:[letter-spacing:var(--custom-letter-spacing,inherit)!important] [&_*]:[line-height:var(--custom-line-height,inherit)!important] [&_*]:[text-align:var(--custom-text-align,inherit)!important]"
+    >
+      {renderEffect()}
+    </div>
+  );
 }
 
 // ─── Existing effects ─────────────────────────────────────────────────────────
 
 function TypewriterEffect({ text }: { text: string }) {
   return (
-    <div className="flex items-center font-mono text-2xl font-bold tracking-tight text-white sm:text-3xl">
+    <div className="flex items-center font-mono font-bold tracking-tight text-white">
       <motion.span
         initial={{ width: 0 }}
         animate={{ width: "100%" }}
@@ -466,7 +465,7 @@ function TypewriterEffect({ text }: { text: string }) {
 function StaggerUpEffect({ text }: { text: string }) {
   const words = text.split(" ");
   return (
-    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-2xl font-bold text-white sm:text-3xl">
+    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 font-bold text-white">
       {words.map((word, i) => (
         <span key={i} className="inline-block overflow-hidden py-1">
           <motion.span
@@ -486,7 +485,7 @@ function StaggerUpEffect({ text }: { text: string }) {
 function FadeWordsEffect({ text }: { text: string }) {
   const words = text.split(" ");
   return (
-    <div className="flex flex-wrap justify-center gap-x-2.5 gap-y-1 text-2xl font-medium text-white/90 sm:text-3xl">
+    <div className="flex flex-wrap justify-center gap-x-2.5 gap-y-1 font-medium text-white/90">
       {words.map((word, i) => (
         <motion.span
           key={i}
@@ -505,7 +504,7 @@ function FadeWordsEffect({ text }: { text: string }) {
 function CharacterPopEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex flex-wrap justify-center text-2xl font-extrabold tracking-wider text-white sm:text-3xl">
+    <div className="flex flex-wrap justify-center font-extrabold tracking-wider text-white">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -523,7 +522,7 @@ function CharacterPopEffect({ text }: { text: string }) {
 
 function GradientWaveEffect({ text }: { text: string }) {
   return (
-    <div className="text-center text-2xl font-extrabold sm:text-4xl">
+    <div className="text-center font-extrabold">
       <motion.span
         animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -544,7 +543,7 @@ function GradientWaveEffect({ text }: { text: string }) {
 
 function GlitchEffect({ text }: { text: string }) {
   return (
-    <div className="relative text-2xl font-black tracking-widest text-white sm:text-3xl">
+    <div className="relative font-black tracking-widest text-white">
       <motion.span
         animate={{ x: [-2, 2, -1, 0] }}
         transition={{ duration: 0.25, repeat: Infinity, repeatDelay: 1.2 }}
@@ -565,7 +564,7 @@ function GlitchEffect({ text }: { text: string }) {
 function Flip3DEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex flex-wrap justify-center text-2xl font-bold tracking-tight text-white sm:text-3xl" style={{ perspective: "500px" }}>
+    <div className="flex flex-wrap justify-center font-bold tracking-tight text-white" style={{ perspective: "500px" }}>
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -593,7 +592,7 @@ function NeonGlowEffect({ text }: { text: string }) {
         opacity: [1, 0.35, 1],
       }}
       transition={{ duration: 3.2, repeat: Infinity, times: [0, 0.5, 1] }}
-      className="text-center text-2xl font-black tracking-widest text-cyan-300 sm:text-3xl"
+      className="text-center font-black tracking-widest text-cyan-300"
     >
       {text}
     </motion.div>
@@ -621,7 +620,7 @@ function ScrambleEffect({ text }: { text: string }) {
     return () => clearInterval(interval);
   }, [text]);
 
-  return <div className="font-mono text-2xl font-bold tracking-widest text-emerald-400 sm:text-3xl">{display}</div>;
+  return <div className="font-mono font-bold tracking-widest text-emerald-400">{display}</div>;
 }
 
 function BlurRevealEffect({ text }: { text: string }) {
@@ -630,7 +629,7 @@ function BlurRevealEffect({ text }: { text: string }) {
       initial={{ filter: "blur(14px)", opacity: 0, scale: 0.95 }}
       animate={{ filter: "blur(0px)", opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="text-center text-2xl font-bold tracking-tight text-white sm:text-3xl"
+      className="text-center font-bold tracking-tight text-white"
     >
       {text}
     </motion.div>
@@ -642,7 +641,7 @@ function BlurRevealEffect({ text }: { text: string }) {
 function WaveEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest text-[#22d3ee] sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-widest text-[#22d3ee]">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -659,7 +658,7 @@ function WaveEffect({ text }: { text: string }) {
 
 function LiquidFillEffect({ text }: { text: string }) {
   return (
-    <div className="text-2xl font-black tracking-widest sm:text-4xl">
+    <div className="font-black tracking-widest">
       <motion.span
         animate={{ backgroundPosition: ["0% -110%", "0% 10%", "0% -110%"] }}
         transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
@@ -681,7 +680,7 @@ function LiquidFillEffect({ text }: { text: string }) {
 
 function ChromeShineEffect({ text }: { text: string }) {
   return (
-    <div className="text-2xl font-black tracking-widest sm:text-3xl">
+    <div className="font-black tracking-widest">
       <motion.span
         animate={{ backgroundPosition: ["130% 0", "-130% 0"] }}
         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
@@ -704,7 +703,7 @@ function ChromeShineEffect({ text }: { text: string }) {
 function FocusBlurEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest text-white sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-widest text-white">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -721,7 +720,7 @@ function FocusBlurEffect({ text }: { text: string }) {
 
 function EchoEffect({ text }: { text: string }) {
   return (
-    <div className="relative flex items-center justify-center text-2xl font-black tracking-widest text-white sm:text-3xl">
+    <div className="relative flex items-center justify-center font-black tracking-widest text-white">
       <span className="relative z-10">{text}</span>
       {[0, 1].map((layer) => (
         <motion.span
@@ -742,7 +741,7 @@ function EchoEffect({ text }: { text: string }) {
 function SpectrumEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-widest">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -767,7 +766,7 @@ function JitterEffect({ text }: { text: string }) {
         opacity: [1, 1, 1, 1, 1, 1, 0.75, 1, 1],
       }}
       transition={{ duration: 1.9, repeat: Infinity, ease: "linear" }}
-      className="text-2xl font-black tracking-widest text-white sm:text-3xl"
+      className="font-black tracking-widest text-white"
     >
       {text}
     </motion.div>
@@ -785,7 +784,7 @@ function AnaglyphEffect({ text }: { text: string }) {
         ],
       }}
       transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-      className="text-2xl font-black tracking-widest text-white sm:text-3xl"
+      className="font-black tracking-widest text-white"
     >
       {text}
     </motion.div>
@@ -795,7 +794,7 @@ function AnaglyphEffect({ text }: { text: string }) {
 function FlapEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex items-center justify-center gap-1 font-mono text-2xl font-bold text-white sm:text-3xl" style={{ perspective: "400px" }}>
+    <div className="flex items-center justify-center gap-1 font-mono font-bold text-white" style={{ perspective: "400px" }}>
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -826,7 +825,7 @@ function ElasticEffect({ text }: { text: string }) {
         scaleY: [1, 0.72, 1.24, 0.9, 1.05, 0.98, 1],
       }}
       transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-      className="text-2xl font-black tracking-widest text-[#22d3ee] sm:text-3xl"
+      className="font-black tracking-widest text-[#22d3ee]"
     >
       {text}
     </motion.div>
@@ -835,7 +834,7 @@ function ElasticEffect({ text }: { text: string }) {
 
 function SpotlightEffect({ text }: { text: string }) {
   return (
-    <div className="text-2xl font-black tracking-widest sm:text-3xl">
+    <div className="font-black tracking-widest">
       <motion.span
         animate={{ backgroundPosition: ["100% 0", "0% 0"] }}
         transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
@@ -865,7 +864,7 @@ function EmberEffect({ text }: { text: string }) {
         ],
       }}
       transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
-      className="text-2xl font-black tracking-widest sm:text-3xl"
+      className="font-black tracking-widest"
       style={{ color: "#ffd9a0" }}
     >
       {text}
@@ -876,7 +875,7 @@ function EmberEffect({ text }: { text: string }) {
 function MeltEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-black tracking-widest text-[#ec4899] sm:text-3xl">
+    <div className="flex justify-center font-black tracking-widest text-[#ec4899]">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -910,7 +909,7 @@ function HeartbeatEffect({ text }: { text: string }) {
         ],
       }}
       transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", times: [0, 0.14, 0.28, 0.42, 0.7] }}
-      className="text-2xl font-black tracking-widest text-[#ec4899] sm:text-3xl"
+      className="font-black tracking-widest text-[#ec4899]"
     >
       {text}
     </motion.div>
@@ -919,7 +918,7 @@ function HeartbeatEffect({ text }: { text: string }) {
 
 function MarkerEffect({ text }: { text: string }) {
   return (
-    <div className="relative text-2xl font-bold tracking-wider text-white sm:text-3xl">
+    <div className="relative font-bold tracking-wider text-white">
       <motion.span
         animate={{ backgroundSize: ["0% 46%", "100% 46%", "0% 46%"] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -940,7 +939,7 @@ function MarkerEffect({ text }: { text: string }) {
 
 function HologramEffect({ text }: { text: string }) {
   return (
-    <div className="relative text-2xl font-black tracking-widest sm:text-3xl" style={{ isolation: "isolate" }}>
+    <div className="relative font-black tracking-widest" style={{ isolation: "isolate" }}>
       <motion.span
         animate={{ y: [2, -4, 2], skewX: [0, -3, 0], filter: ["brightness(1)", "brightness(1.35)", "brightness(1)"] }}
         transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
@@ -963,7 +962,7 @@ function HologramEffect({ text }: { text: string }) {
 function KineticEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-wide sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-wide">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -981,7 +980,7 @@ function KineticEffect({ text }: { text: string }) {
 
 function BlackoutEffect({ text }: { text: string }) {
   return (
-    <div className="relative text-2xl font-black tracking-widest text-white sm:text-3xl" style={{ padding: "0.28em 0.12em" }}>
+    <div className="relative font-black tracking-widest text-white" style={{ padding: "0.28em 0.12em" }}>
       <span>{text}</span>
       <motion.div
         animate={{ scaleX: [0, 0, 1, 1, 0.38, 0] }}
@@ -1002,7 +1001,7 @@ function BlackoutEffect({ text }: { text: string }) {
 function MagneticEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-widest">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -1024,7 +1023,7 @@ function MagneticEffect({ text }: { text: string }) {
 function PendulumEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest sm:text-3xl" style={{ perspective: "400px" }}>
+    <div className="flex justify-center font-bold tracking-widest" style={{ perspective: "400px" }}>
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -1042,7 +1041,7 @@ function PendulumEffect({ text }: { text: string }) {
 function SmokeEffect({ text }: { text: string }) {
   const chars = text.split("");
   return (
-    <div className="flex justify-center text-2xl font-bold tracking-widest text-white sm:text-3xl">
+    <div className="flex justify-center font-bold tracking-widest text-white">
       {chars.map((ch, i) => (
         <motion.span
           key={i}
@@ -1065,7 +1064,7 @@ function SmokeEffect({ text }: { text: string }) {
 
 function ScannerEffect({ text }: { text: string }) {
   return (
-    <div className="relative overflow-hidden text-2xl font-black tracking-widest sm:text-3xl">
+    <div className="relative overflow-hidden font-black tracking-widest">
       <motion.span
         animate={{ backgroundPosition: ["100% 0", "0% 0"] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
