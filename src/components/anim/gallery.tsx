@@ -26,12 +26,12 @@ const VOCABTUNES_APP: AppGalleryItem = {
   name: "VocabTunes",
   icon: assetUrl(shippedManifest.apps["6473722198"].icon),
   screenshots: [
-    { src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80", alt: "AI Neural Engine — Fluid 3D canvas" },
-    { src: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80", alt: "Spatial Studio — Glassmorphism UI" },
-    { src: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80", alt: "Cybernetic Audio — Real-time matrix" },
-    { src: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80", alt: "Vector Motion — Quantum wave flow" },
-    { src: "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80", alt: "Aurora Spectrum — Color dynamics" },
-    { src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80", alt: "Expressive Design — Digital artwork" },
+    { src: "https://plus.unsplash.com/premium_photo-1784765158320-c46df91a7cb4?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "AI Neural Engine — Fluid 3D canvas" },
+    { src: "https://plus.unsplash.com/premium_photo-1782387656252-a091b9a2371a?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Studio — Glassmorphism UI" },
+    { src: "https://plus.unsplash.com/premium_photo-1782386847285-f646607be9c8?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Cybernetic Audio — Real-time matrix" },
+    { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Vector Motion — Quantum wave flow" },
+    { src: "https://plus.unsplash.com/premium_photo-1785080652550-fc31c752f67d?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Aurora Spectrum — Color dynamics" },
+    { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Expressive Design — Digital artwork" },
   ],
 };
 
@@ -40,12 +40,11 @@ const BUZZED_APP: AppGalleryItem = {
   name: "Buzzed Party",
   icon: assetUrl(shippedManifest.apps["6761237352"].icon),
   screenshots: [
-    { src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80", alt: "Live Telemetry — Analytics dashboard" },
-    { src: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80", alt: "Atmosphere Studio — Dark audio console" },
-    { src: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80", alt: "Hyperdrive Hub — Esports gaming setup" },
+    { src: "https://images.unsplash.com/photo-1577774438656-768f1e5d9ed6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Live Telemetry — Analytics dashboard" },
+    { src: "https://plus.unsplash.com/premium_photo-1695802468726-eb6a92720904?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Atmosphere Studio — Dark audio console" },
+    { src: "https://plus.unsplash.com/premium_photo-1667857647862-f9ac10eda5ad?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Hyperdrive Hub — Esports gaming setup" },
     { src: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80", alt: "Vision Spatial UI — VR interface" },
     { src: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", alt: "Chroma Builder — Modern UI engine" },
-    { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80", alt: "Command Desk — Real-time market UI" },
   ],
 };
 
@@ -54,12 +53,12 @@ const NOTEFLY_APP: AppGalleryItem = {
   name: "NoteFly",
   icon: assetUrl(shippedManifest.apps["6748024051"].icon),
   screenshots: [
-    { src: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80", alt: "React Spatial 3D — Code engine" },
-    { src: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80", alt: "Neon Nightscape — Midnight aesthetic" },
-    { src: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", alt: "Prismatic Array — Energy spectrum" },
-    { src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80", alt: "Fluid Motion — Acrylic dynamics" },
-    { src: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80", alt: "Luminous Studio — Neon lineart" },
-    { src: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80", alt: "Spatial Architecture — Minimalist lighting" },
+    { src: "https://images.unsplash.com/photo-1644371972225-4917efaa3958?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "React Spatial 3D — Code engine" },
+    { src: "https://images.unsplash.com/photo-1752604247379-f7df3beb25b6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Neon Nightscape — Midnight aesthetic" },
+    { src: "https://images.unsplash.com/photo-1667644813320-0c6bf26a015d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Prismatic Array — Energy spectrum" },
+    { src: "https://plus.unsplash.com/premium_photo-1663036504811-01f157485b20?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Fluid Motion — Acrylic dynamics" },
+    { src: "https://images.unsplash.com/photo-1642663034122-3a37f88cc8cf?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Luminous Studio — Neon lineart" },
+    { src: "https://images.unsplash.com/photo-1690217504455-31a4377de8f2?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Architecture — Minimalist lighting" },
   ],
 };
 
@@ -98,6 +97,15 @@ function useContainerSize(ref: React.RefObject<HTMLDivElement | null>) {
   }, [ref]);
 
   return size;
+}
+
+/** Helper to scale fixed size components relative to container size */
+function getResponsiveScale(size: { width: number; height: number }, isDetail: boolean) {
+  if (!isDetail) {
+    return Math.max(0.5, Math.min(1.2, size.width / 300));
+  }
+  const minDim = Math.min(size.width, size.height);
+  return Math.max(0.8, Math.min(2.5, minDim / 450));
 }
 
 /** Helper to convert options into Framer Motion transition configurations */
@@ -172,10 +180,11 @@ function ProximityOrbitDemo({
 
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
-  const cardW = options?.cardWidth ?? (isDetail ? 100 : 44);
-  const cardH = options?.cardHeight ?? (isDetail ? 150 : 66);
-  const gapOffset = (options?.gap ?? 16) - 16;
-  const radius = Math.max(40, (isDetail ? 190 : 85) + gapOffset * 3);
+  const scale = getResponsiveScale(size, isDetail);
+  const cardW = (options?.cardWidth ?? (isDetail ? 100 : 44)) * scale;
+  const cardH = (options?.cardHeight ?? (isDetail ? 150 : 66)) * scale;
+  const gapOffset = ((options?.gap ?? 16) - 16) * scale;
+  const radius = Math.max(40 * scale, (isDetail ? 190 : 85) * scale + gapOffset * 3);
   const tilt = options?.tilt ?? 0;
   const sidewaysTilt = options?.sidewaysTilt ?? 0;
   const inactiveOpacity = (options?.inactiveOpacity ?? 80) / 100;
@@ -343,16 +352,32 @@ function MagneticCarouselDemo({
   const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
-  const cardW = options?.cardWidth ?? (isDetail ? 80 : 36);
-  const cardH = options?.cardHeight ?? (isDetail ? 180 : 88);
-  const gap = options?.gap ?? (isDetail ? 10 : 4);
-  const borderRadius = options?.borderRadius ?? 12;
+  const gap = Math.max(
+    15,
+    Math.min(isDetail ? 65 : 45, size.width * 0.03)
+  );
   const inactiveOpacity = (options?.inactiveOpacity ?? 70) / 100;
   const duration = options?.duration ?? 0.5;
+
   const motionTrans = getMotionTransition(
     options?.transition,
     options?.duration,
     options?.easing
+  );
+  
+  const horizontalPadding = isDetail ? size.width * 0.1 : 48;
+  const maxCardWidth = isDetail ? Math.max(140, size.width * 0.18) : 140;
+
+  const cardWidth = Math.min(
+    maxCardWidth,
+    Math.max(
+      60,
+      (
+        size.width -
+        horizontalPadding -
+        gap * (shots.length - 1)
+      ) / shots.length
+    )
   );
 
   // Ambient sine-wave wave effect when mouse is idle
@@ -376,66 +401,113 @@ function MagneticCarouselDemo({
   const handleMouseLeave = () => setMouseX(null);
 
   return (
-    <Center className="h-full w-full">
+    <Center className="h-full w-full ">
       <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden p-2">
-        <div
-          ref={containerRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{ gap: `${gap}px` }}
-          className={`${isDetail
-            ? "mt-12 p-4 border-white/20 bg-white/[0.04]"
-            : "mt-4 p-2 border-white/10 bg-white/[0.03]"
-            } flex max-w-full items-end justify-center overflow-x-auto rounded-2xl border backdrop-blur-xl scrollbar-none shadow-2xl transition-all`}
-        >
-          {shots.map((shot, idx) => {
-            let scale = 1;
-            let translateY = 0;
+        <div className="flex h-full w-full items-center justify-center">
+          <div
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ gap }}
+            className={`
+              flex
+              items-center
+              justify-center
+              overflow-x-auto
+              overflow-y-hidden
+              h-full
+              w-full
+              scrollbar-none
+              transition-all
+            `}
+          >
+            {shots.map((shot, idx) => {
+              let scale = 1;
+              let translateY = 0;
 
-            if (mouseX !== null && containerRef.current) {
-              const cardCenterX = 16 + idx * (cardW + gap) + cardW / 2;
-              const dist = Math.abs(mouseX - cardCenterX);
-              const sigma = isDetail ? 90 : 45;
-              const mag = Math.exp(-Math.pow(dist, 2) / (2 * Math.pow(sigma, 2)));
-              scale = 1 + mag * (isDetail ? 0.45 : 0.38);
-              translateY = -mag * (isDetail ? 28 : 14);
-            } else if (autoplay) {
-              const wave = Math.sin(ambientTick + idx * 0.7) * 0.5 + 0.5;
-              scale = 1 + wave * 0.15;
-              translateY = -wave * (isDetail ? 12 : 6);
-            }
+              if (mouseX !== null) {
+                const card =
+                  containerRef.current?.children[idx] as HTMLElement;
 
-            return (
-              <motion.div
-                key={`${shot.src}-${idx}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpandedShot(shot);
-                }}
-                animate={{ scale, y: translateY }}
-                transition={motionTrans}
-                className="group relative cursor-pointer shrink-0"
-                style={{ opacity: mouseX !== null ? 1 : inactiveOpacity }}
-              >
-                <div
-                  style={{
-                    width: cardW,
-                    height: cardH,
-                    borderRadius: `${borderRadius}px`,
+                if (card) {
+                  const center =
+                    card.offsetLeft + card.offsetWidth / 2;
+
+                  const dist = Math.abs(mouseX - center);
+
+                  const sigma = 120;
+
+                  const mag = Math.exp(
+                    -(dist * dist) /
+                    (2 * sigma * sigma)
+                  );
+
+                  scale = 1 + mag * (isDetail ? 0.35 : 0.25);
+                  translateY = -mag * 24;
+                }
+              } else if (autoplay) {
+                const wave =
+                  Math.sin(ambientTick + idx * 0.7) * 0.5 + 0.5;
+
+                scale = 1 + wave * 0.12;
+                translateY = -wave * 8;
+              }
+
+              return (
+                <motion.div
+                  key={idx}
+                  animate={{
+                    scale,
+                    y: translateY,
                   }}
-                  className="relative overflow-hidden border border-white/25 bg-slate-950 shadow-xl transition duration-200 group-hover:border-purple-400"
+                  transition={motionTrans}
+                  className="group shrink-0 cursor-pointer"
+                  style={{
+                    opacity:
+                      mouseX !== null
+                        ? 1
+                        : inactiveOpacity,
+                  }}
+                  onClick={() => setExpandedShot(shot)}
                 >
-                  <img src={shot.src} alt={shot.alt} className="h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70" />
-                  {showTitle && (
-                    <div className="absolute bottom-1.5 left-0 right-0 text-center font-mono text-[9px] font-bold text-white">
-                      #{idx + 1}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+                  <div
+                    style={{
+                      width: cardWidth,
+                    }}
+                    className="
+                      aspect-[9/19]
+                      shrink-0
+                      overflow-hidden
+                      rounded-2xl
+                      border
+                      border-white/20
+                      bg-slate-900
+                      shadow-xl
+                  "
+                  >
+                    <img
+                      src={shot.src}
+                      alt={shot.alt}
+                      className="
+                h-full
+                w-full
+                object-cover
+                object-center
+              "
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent" />
+
+                    {showTitle && (
+                      <div className="absolute bottom-2 left-0 right-0 text-center text-[10px] font-bold text-white">
+                        #{idx + 1}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Full Modal View */}
@@ -510,9 +582,10 @@ function RingGalleryDemo({
   const totalShots = shots.length;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
-  const cardW = options?.cardWidth ?? (isDetail ? 100 : 46);
-  const cardH = options?.cardHeight ?? (isDetail ? 150 : 68);
-  const gap = options?.gap ?? 14;
+  const scale = getResponsiveScale(size, isDetail);
+  const cardW = (options?.cardWidth ?? (isDetail ? 100 : 46)) * scale;
+  const cardH = (options?.cardHeight ?? (isDetail ? 150 : 68)) * scale;
+  const gap = (options?.gap ?? 14) * scale;
   const tilt = options?.tilt ?? 12;
   const sidewaysTilt = options?.sidewaysTilt ?? 0;
   const borderRadius = options?.borderRadius ?? 12;
@@ -558,8 +631,8 @@ function RingGalleryDemo({
   };
 
   const ringRadius = isDetail
-    ? Math.max(120, totalShots * (gap + 12))
-    : Math.max(60, totalShots * (gap + 2));
+    ? Math.max(120 * scale, totalShots * (gap + 12 * scale))
+    : Math.max(60 * scale, totalShots * (gap + 2 * scale));
 
   return (
     <Center className="h-full w-full">
@@ -652,9 +725,10 @@ function RoundCarouselDemo({
   const totalShots = shots.length;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
-  const cardW = options?.cardWidth ?? (isDetail ? 110 : 50);
-  const cardH = options?.cardHeight ?? (isDetail ? 165 : 75);
-  const gap = options?.gap ?? 14;
+  const scale = getResponsiveScale(size, isDetail);
+  const cardW = (options?.cardWidth ?? (isDetail ? 110 : 50)) * scale;
+  const cardH = (options?.cardHeight ?? (isDetail ? 165 : 75)) * scale;
+  const gap = (options?.gap ?? 14) * scale;
   const tilt = options?.tilt ?? 8;
   const sidewaysTilt = options?.sidewaysTilt ?? 0;
   const borderRadius = options?.borderRadius ?? 12;
@@ -710,8 +784,8 @@ function RoundCarouselDemo({
   };
 
   const cylinderRadius = isDetail
-    ? Math.max(130, totalShots * (gap + 13))
-    : Math.max(65, totalShots * (gap + 2));
+    ? Math.max(130 * scale, totalShots * (gap + 13 * scale))
+    : Math.max(65 * scale, totalShots * (gap + 2 * scale));
 
   return (
     <Center className="h-full w-full">
