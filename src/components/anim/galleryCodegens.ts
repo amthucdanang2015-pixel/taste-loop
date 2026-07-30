@@ -1,183 +1,49 @@
+// galleryCodegens.ts - Code generators for Gallery variants
+
+export type CodeGen = (opts: any, item: any) => string;
+
+export const GALLERY_CODEGENS: Record<string, CodeGen> = {};
+
+GALLERY_CODEGENS["proximity-orbit"] = (opts, item) => {
+  const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+  
+  return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
+
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion, useMotionValue, animate, useTransform } from "framer-motion";
-import { Center } from "./_kit";
-import shippedManifest from "../../../assets/shipped-manifest.json";
-import { assetUrl } from "@/config/assets";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, animate, useTransform, useReducedMotion } from "framer-motion";
 import { X, Sparkles, RotateCw, Layers } from "lucide-react";
-import { type GalleryOptions } from "./gallerySchema";
 
-export interface ScreenshotItem {
-  src: string;
-  alt: string;
-}
+${GALLERY_HELPERS}
 
-export interface AppGalleryItem {
-  id: string;
-  name: string;
-  icon: string;
-  screenshots: ScreenshotItem[];
-}
-
-/** Curated visual showcases highlighting key product features with high-resolution imagery */
-const VOCABTUNES_APP: AppGalleryItem = {
-  id: "6473722198",
-  name: "VocabTunes",
-  icon: assetUrl(shippedManifest.apps["6473722198"].icon),
-  screenshots: [
-    { src: "https://plus.unsplash.com/premium_photo-1784765158320-c46df91a7cb4?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "AI Neural Engine — Fluid 3D canvas" },
-    { src: "https://plus.unsplash.com/premium_photo-1782387656252-a091b9a2371a?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Studio — Glassmorphism UI" },
-    { src: "https://plus.unsplash.com/premium_photo-1782386847285-f646607be9c8?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Cybernetic Audio — Real-time matrix" },
-    { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Vector Motion — Quantum wave flow" },
-    { src: "https://plus.unsplash.com/premium_photo-1785080652550-fc31c752f67d?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Aurora Spectrum — Color dynamics" },
-    { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Expressive Design — Digital artwork" },
-  ],
-};
-
-const BUZZED_APP: AppGalleryItem = {
-  id: "6761237352",
-  name: "Buzzed Party",
-  icon: assetUrl(shippedManifest.apps["6761237352"].icon),
-  screenshots: [
-    { src: "https://images.unsplash.com/photo-1577774438656-768f1e5d9ed6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Live Telemetry — Analytics dashboard" },
-    { src: "https://plus.unsplash.com/premium_photo-1695802468726-eb6a92720904?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Atmosphere Studio — Dark audio console" },
-    { src: "https://plus.unsplash.com/premium_photo-1667857647862-f9ac10eda5ad?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Hyperdrive Hub — Esports gaming setup" },
-    { src: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80", alt: "Vision Spatial UI — VR interface" },
-    { src: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", alt: "Chroma Builder — Modern UI engine" },
-  ],
-};
-
-const NOTEFLY_APP: AppGalleryItem = {
-  id: "6748024051",
-  name: "NoteFly",
-  icon: assetUrl(shippedManifest.apps["6748024051"].icon),
-  screenshots: [
-    { src: "https://images.unsplash.com/photo-1644371972225-4917efaa3958?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "React Spatial 3D — Code engine" },
-    { src: "https://images.unsplash.com/photo-1752604247379-f7df3beb25b6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Neon Nightscape — Midnight aesthetic" },
-    { src: "https://images.unsplash.com/photo-1667644813320-0c6bf26a015d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Prismatic Array — Energy spectrum" },
-    { src: "https://plus.unsplash.com/premium_photo-1663036504811-01f157485b20?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Fluid Motion — Acrylic dynamics" },
-    { src: "https://images.unsplash.com/photo-1642663034122-3a37f88cc8cf?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Luminous Studio — Neon lineart" },
-    { src: "https://images.unsplash.com/photo-1690217504455-31a4377de8f2?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Architecture — Minimalist lighting" },
-  ],
-};
-
-const KING_ENGLISH_APP: AppGalleryItem = {
-  id: "6483942011",
-  name: "King English Kids",
-  icon: assetUrl(shippedManifest.apps["6483942011"].icon),
-  screenshots: [
-    { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80", alt: "Villa Architecture — Design system" },
-    { src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80", alt: "Global Data Mesh — Connected earth" },
-    { src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", alt: "Alpine Mirror — Mountain reflection" },
-    { src: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80", alt: "Sahara Sunset — Dune horizon" },
-    { src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", alt: "Emerald Forest — Misty ridge" },
-    { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", alt: "Studio Lighting — Portrait showcase" },
-  ],
-};
-
-/** Hook to measure container dimensions for responsive scaling between Card view & Detail view */
-function useContainerSize(ref: React.RefObject<HTMLDivElement | null>) {
-  const [size, setSize] = useState({ width: 300, height: 260 });
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-          setSize({
-            width: entry.contentRect.width,
-            height: entry.contentRect.height,
-          });
-        }
-      }
-    });
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [ref]);
-
-  return size;
-}
-
-/** Helper to scale fixed size components relative to container size */
-function getResponsiveScale(size: { width: number; height: number }, isDetail: boolean) {
-  if (!isDetail) {
-    return Math.max(0.5, Math.min(1.2, size.width / 300));
-  }
-  const minDim = Math.min(size.width, size.height);
-  return Math.max(0.8, Math.min(2.5, minDim / 450));
-}
-
-/** Helper to convert options into Framer Motion transition configurations */
-function getMotionTransition(
-  transitionType?: string,
-  durationVal?: number,
-  easingVal?: string
-) {
-  const duration = Math.max(0.05, durationVal ?? 0.8);
-  const ease =
-    easingVal === "linear"
-      ? "linear"
-      : easingVal === "ease-in-out"
-        ? [0.42, 0, 0.58, 1]
-        : easingVal === "spring"
-          ? undefined
-          : [0.22, 1, 0.36, 1];
-
-  if (transitionType === "Spring" || easingVal === "spring") {
-    return { type: "spring", stiffness: Math.max(80, 360 / duration), damping: 24 };
-  }
-
-  if (transitionType === "Linear Inertia" || easingVal === "linear") {
-    return { duration, ease: "linear" };
-  }
-
-  return { duration, ease: ease ?? [0.22, 1, 0.36, 1] };
-}
-
-export function GalleryDemo({
-  variant,
-  options,
+export function ${compName}Gallery({
+  slides = [
+      { src: "https://plus.unsplash.com/premium_photo-1784765158320-c46df91a7cb4?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "AI Neural Engine — Fluid 3D canvas" },
+      { src: "https://plus.unsplash.com/premium_photo-1782387656252-a091b9a2371a?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Studio — Glassmorphism UI" },
+      { src: "https://plus.unsplash.com/premium_photo-1782386847285-f646607be9c8?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Cybernetic Audio — Real-time matrix" },
+      { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Vector Motion — Quantum wave flow" },
+      { src: "https://plus.unsplash.com/premium_photo-1785080652550-fc31c752f67d?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Aurora Spectrum — Color dynamics" },
+      { src: "https://plus.unsplash.com/premium_photo-1785080652560-f334e6ea704c?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Expressive Design — Digital artwork" },
+    ],
+  options = ${JSON.stringify(opts, null, 2).replace(/\n/g, '\n  ')}
 }: {
-  variant: string;
-  options?: GalleryOptions;
+  slides?: GallerySlide[];
+  options?: any;
 }) {
-  const isOrbit = variant === "proximity-orbit" || variant === "orbit";
-  const isMagnetic = variant === "magnetic" || variant === "magnetic-carousel";
-  const isRing = variant === "ring" || variant === "ring-gallery";
-  const isRound = variant === "round" || variant === "round-carousel";
-  const isBox = variant === "box" || variant === "box-carousel";
+  const app = { icon: "", name: "Demo App", screenshots: slides };
 
-  if (isOrbit) return <ProximityOrbitDemo app={VOCABTUNES_APP} options={options} />;
-  if (isMagnetic) return <MagneticCarouselDemo app={BUZZED_APP} options={options} />;
-  if (isRing) return <RingGalleryDemo app={NOTEFLY_APP} options={options} />;
-  if (isRound) return <RoundCarouselDemo app={KING_ENGLISH_APP} options={options} />;
-  if (isBox) return <BoxCarouselDemo app={NOTEFLY_APP} options={options} />;
-
-  return <ProximityOrbitDemo app={VOCABTUNES_APP} options={options} />;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
- * 1. PROXIMITY ORBIT
- * Circular 3D orbit displaying screenshots.
- * ────────────────────────────────────────────────────────────────────────────*/
-function ProximityOrbitDemo({
-  app,
-  options,
-}: {
-  app: AppGalleryItem;
-  options?: GalleryOptions;
-}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const size = useContainerSize(containerRef);
   const isDetail = size.height > 380;
 
   const [mousePos, setMousePos] = useState({ x: -999, y: -999 });
   const [rotation, setRotation] = useState(0);
-  const [activeShot, setActiveShot] = useState<ScreenshotItem | null>(null);
+  const [activeShot, setActiveShot] = useState<GallerySlide | null>(null);
   const reduce = useReducedMotion();
 
-  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+  const shots = slides;
   const totalShots = shots.length;
 
   const autoplay = options?.autoplay ?? true;
@@ -228,7 +94,7 @@ function ProximityOrbitDemo({
   };
 
   return (
-    <Center className="h-full w-full">
+    <div className="h-full w-full bg-[#0d0c14] overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 p-4">
       <div
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -242,7 +108,7 @@ function ProximityOrbitDemo({
           style={{
             width: radius * 2.1,
             height: radius * 2.1,
-            transform: `rotateX(${tilt}deg) rotateZ(${sidewaysTilt}deg)`,
+            transform: \`rotateX(\${tilt}deg) rotateZ(\${sidewaysTilt}deg)\`,
           }}
         />
 
@@ -262,7 +128,7 @@ function ProximityOrbitDemo({
 
           return (
             <motion.div
-              key={`${shot.src}-${idx}`}
+              key={\`\${shot.src}-\${idx}\`}
               onClick={(e) => {
                 e.stopPropagation();
                 setActiveShot(shot);
@@ -270,7 +136,7 @@ function ProximityOrbitDemo({
               transition={motionTrans}
               className="absolute cursor-pointer"
               style={{
-                transform: `translate3d(${cardX}px, ${cardY}px, 0px) rotateX(${tilt}deg) rotateZ(${sidewaysTilt}deg) scale(${scale})`,
+                transform: \`translate3d(\${cardX}px, \${cardY}px, 0px) rotateX(\${tilt}deg) rotateZ(\${sidewaysTilt}deg) scale(\${scale})\`,
                 zIndex,
                 opacity: isHovered ? 1 : inactiveOpacity,
               }}
@@ -278,8 +144,8 @@ function ProximityOrbitDemo({
               <div
                 className="relative overflow-hidden border border-white/25 bg-slate-950 p-1 transition-all duration-150"
                 style={{
-                  borderRadius: `${borderRadius}px`,
-                  boxShadow: `0 0 ${20 * scale}px rgba(168, 85, 247, ${glowOpacity})`,
+                  borderRadius: \`\${borderRadius}px\`,
+                  boxShadow: \`0 0 \${20 * scale}px rgba(168, 85, 247, \${glowOpacity})\`,
                 }}
               >
                 <img
@@ -288,7 +154,7 @@ function ProximityOrbitDemo({
                   style={{
                     width: cardW,
                     height: cardH,
-                    borderRadius: `${Math.max(2, borderRadius - 2)}px`,
+                    borderRadius: \`\${Math.max(2, borderRadius - 2)}px\`,
                   }}
                   className="object-cover"
                 />
@@ -310,8 +176,8 @@ function ProximityOrbitDemo({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
               transition={motionTrans}
-              className={`absolute ${isDetail ? "bottom-6 text-sm px-4 py-2" : "bottom-2 text-[10px] px-2.5 py-1"
-                } z-40 flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/95 text-purple-100 backdrop-blur-xl shadow-2xl`}
+              className={\`absolute \${isDetail ? "bottom-6 text-sm px-4 py-2" : "bottom-2 text-[10px] px-2.5 py-1"
+                } z-40 flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/95 text-purple-100 backdrop-blur-xl shadow-2xl\`}
             >
               <Sparkles className="h-4 w-4 text-purple-400 shrink-0" />
               <span className="max-w-[340px] truncate">{activeShot.alt}</span>
@@ -328,30 +194,52 @@ function ProximityOrbitDemo({
           )}
         </AnimatePresence>
       </div>
-    </Center>
+    </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
- * 2. MAGNETIC CAROUSEL
- * Displays screenshot bars with macOS dock magnification.
- * ────────────────────────────────────────────────────────────────────────────*/
-function MagneticCarouselDemo({
-  app,
-  options,
+export default ${compName}Gallery;
+`;
+};
+
+GALLERY_CODEGENS["magnetic"] = (opts, item) => {
+  const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+  
+  return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
+
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, animate, useTransform, useReducedMotion } from "framer-motion";
+import { X, Sparkles, RotateCw, Layers } from "lucide-react";
+
+${GALLERY_HELPERS}
+
+export function ${compName}Gallery({
+  slides = [
+      { src: "https://images.unsplash.com/photo-1577774438656-768f1e5d9ed6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Live Telemetry — Analytics dashboard" },
+      { src: "https://plus.unsplash.com/premium_photo-1695802468726-eb6a92720904?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Atmosphere Studio — Dark audio console" },
+      { src: "https://plus.unsplash.com/premium_photo-1667857647862-f9ac10eda5ad?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Hyperdrive Hub — Esports gaming setup" },
+      { src: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80", alt: "Vision Spatial UI — VR interface" },
+      { src: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", alt: "Chroma Builder — Modern UI engine" },
+    ],
+  options = ${JSON.stringify(opts, null, 2).replace(/\n/g, '\n  ')}
 }: {
-  app: AppGalleryItem;
-  options?: GalleryOptions;
+  slides?: GallerySlide[];
+  options?: any;
 }) {
+  const app = { icon: "", name: "Demo App", screenshots: slides };
+
   const [mouseX, setMouseX] = useState<number | null>(null);
-  const [expandedShot, setExpandedShot] = useState<ScreenshotItem | null>(null);
+  const [expandedShot, setExpandedShot] = useState<GallerySlide | null>(null);
   const [ambientTick, setAmbientTick] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const size = useContainerSize(containerRef);
   const isDetail = size.height > 380;
   const reduce = useReducedMotion();
 
-  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+  const shots = slides;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
   const gap = Math.max(
@@ -403,7 +291,7 @@ function MagneticCarouselDemo({
   const handleMouseLeave = () => setMouseX(null);
 
   return (
-    <Center className="h-full w-full ">
+    <div className="h-full w-full bg-[#0d0c14] overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 p-4">
       <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden p-2">
         <div className="flex h-full w-full items-center justify-center">
           <div
@@ -411,7 +299,7 @@ function MagneticCarouselDemo({
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{ gap }}
-            className={`
+            className={\`
               flex
               items-center
               justify-center
@@ -421,7 +309,7 @@ function MagneticCarouselDemo({
               w-full
               scrollbar-none
               transition-all
-            `}
+            \`}
           >
             {shots.map((shot, idx) => {
               let scale = 1;
@@ -555,21 +443,44 @@ function MagneticCarouselDemo({
           )}
         </AnimatePresence>
       </div>
-    </Center>
+    </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
- * 3. RING GALLERY
- * 3D Orbiting ring containing screenshots.
- * ────────────────────────────────────────────────────────────────────────────*/
-function RingGalleryDemo({
-  app,
-  options,
+export default ${compName}Gallery;
+`;
+};
+
+GALLERY_CODEGENS["ring"] = (opts, item) => {
+  const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+  
+  return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
+
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, animate, useTransform, useReducedMotion } from "framer-motion";
+import { X, Sparkles, RotateCw, Layers } from "lucide-react";
+
+${GALLERY_HELPERS}
+
+export function ${compName}Gallery({
+  slides = [
+      { src: "https://images.unsplash.com/photo-1644371972225-4917efaa3958?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "React Spatial 3D — Code engine" },
+      { src: "https://images.unsplash.com/photo-1752604247379-f7df3beb25b6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Neon Nightscape — Midnight aesthetic" },
+      { src: "https://images.unsplash.com/photo-1667644813320-0c6bf26a015d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Prismatic Array — Energy spectrum" },
+      { src: "https://plus.unsplash.com/premium_photo-1663036504811-01f157485b20?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Fluid Motion — Acrylic dynamics" },
+      { src: "https://images.unsplash.com/photo-1642663034122-3a37f88cc8cf?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Luminous Studio — Neon lineart" },
+      { src: "https://images.unsplash.com/photo-1690217504455-31a4377de8f2?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Architecture — Minimalist lighting" },
+    ],
+  options = ${JSON.stringify(opts, null, 2).replace(/\n/g, '\n  ')}
 }: {
-  app: AppGalleryItem;
-  options?: GalleryOptions;
+  slides?: GallerySlide[];
+  options?: any;
 }) {
+  const app = { icon: "", name: "Demo App", screenshots: slides };
+
   const containerRef = useRef<HTMLDivElement>(null);
   const size = useContainerSize(containerRef);
   const isDetail = size.height > 380;
@@ -580,7 +491,7 @@ function RingGalleryDemo({
   const velX = useRef(0.4);
   const reduce = useReducedMotion();
 
-  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+  const shots = slides;
   const totalShots = shots.length;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
@@ -637,7 +548,7 @@ function RingGalleryDemo({
     : Math.max(60 * scale, totalShots * (gap + 2 * scale));
 
   return (
-    <Center className="h-full w-full">
+    <div className="h-full w-full bg-[#0d0c14] overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 p-4">
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
@@ -648,8 +559,8 @@ function RingGalleryDemo({
       >
         {showTitle && (
           <p
-            className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
-              } font-medium text-white/40 z-20`}
+            className={\`absolute \${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
+              } font-medium text-white/40 z-20\`}
           >
             Drag to spin 3D ring · Flings with physics momentum
           </p>
@@ -665,25 +576,25 @@ function RingGalleryDemo({
               width: cardW,
               height: cardH,
               transformStyle: "preserve-3d",
-              transform: `rotateY(${rotY}deg) rotateX(-${tilt}deg) rotateZ(${sidewaysTilt}deg)`,
+              transform: \`rotateY(\${rotY}deg) rotateX(-\${tilt}deg) rotateZ(\${sidewaysTilt}deg)\`,
             }}
           >
             {shots.map((shot, idx) => {
               const angle = idx * (360 / Math.max(1, totalShots));
               return (
                 <div
-                  key={`${shot.src}-${idx}`}
+                  key={\`\${shot.src}-\${idx}\`}
                   className="absolute inset-0 overflow-hidden border border-purple-500/40 bg-slate-950 p-1 shadow-2xl transition-opacity"
                   style={{
-                    borderRadius: `${borderRadius}px`,
-                    transform: `rotateY(${angle}deg) translateZ(${ringRadius}px)`,
+                    borderRadius: \`\${borderRadius}px\`,
+                    transform: \`rotateY(\${angle}deg) translateZ(\${ringRadius}px)\`,
                     opacity: inactiveOpacity,
                   }}
                 >
                   <img
                     src={shot.src}
                     alt={shot.alt}
-                    style={{ borderRadius: `${Math.max(2, borderRadius - 2)}px` }}
+                    style={{ borderRadius: \`\${Math.max(2, borderRadius - 2)}px\` }}
                     className="h-full w-full object-cover"
                   />
                   {showTitle && (
@@ -697,21 +608,44 @@ function RingGalleryDemo({
           </div>
         </div>
       </div>
-    </Center>
+    </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
- * 4. ROUND CAROUSEL
- * 3D Cylindrical carousel of two-sided screenshot cards.
- * ────────────────────────────────────────────────────────────────────────────*/
-function RoundCarouselDemo({
-  app,
-  options,
+export default ${compName}Gallery;
+`;
+};
+
+GALLERY_CODEGENS["round"] = (opts, item) => {
+  const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+  
+  return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
+
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, animate, useTransform, useReducedMotion } from "framer-motion";
+import { X, Sparkles, RotateCw, Layers } from "lucide-react";
+
+${GALLERY_HELPERS}
+
+export function ${compName}Gallery({
+  slides = [
+      { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80", alt: "Villa Architecture — Design system" },
+      { src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80", alt: "Global Data Mesh — Connected earth" },
+      { src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", alt: "Alpine Mirror — Mountain reflection" },
+      { src: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80", alt: "Sahara Sunset — Dune horizon" },
+      { src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", alt: "Emerald Forest — Misty ridge" },
+      { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", alt: "Studio Lighting — Portrait showcase" },
+    ],
+  options = ${JSON.stringify(opts, null, 2).replace(/\n/g, '\n  ')}
 }: {
-  app: AppGalleryItem;
-  options?: GalleryOptions;
+  slides?: GallerySlide[];
+  options?: any;
 }) {
+  const app = { icon: "", name: "Demo App", screenshots: slides };
+
   const containerRef = useRef<HTMLDivElement>(null);
   const size = useContainerSize(containerRef);
   const isDetail = size.height > 380;
@@ -723,7 +657,7 @@ function RoundCarouselDemo({
   const velX = useRef(0.35);
   const reduce = useReducedMotion();
 
-  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+  const shots = slides;
   const totalShots = shots.length;
   const autoplay = options?.autoplay ?? true;
   const showTitle = options?.showTitle ?? true;
@@ -790,7 +724,7 @@ function RoundCarouselDemo({
     : Math.max(65 * scale, totalShots * (gap + 2 * scale));
 
   return (
-    <Center className="h-full w-full">
+    <div className="h-full w-full bg-[#0d0c14] overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 p-4">
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
@@ -801,8 +735,8 @@ function RoundCarouselDemo({
       >
         {showTitle && (
           <p
-            className={`absolute ${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
-              } font-medium text-white/40 z-20`}
+            className={\`absolute \${isDetail ? "bottom-4 text-xs" : "bottom-1 text-[9px]"
+              } font-medium text-white/40 z-20\`}
           >
             Click card to flip 3D · Drag cylinder to spin
           </p>
@@ -818,7 +752,7 @@ function RoundCarouselDemo({
               width: cardW,
               height: cardH,
               transformStyle: "preserve-3d",
-              transform: `rotateY(${rotY}deg) rotateX(-${tilt}deg) rotateZ(${sidewaysTilt}deg)`,
+              transform: \`rotateY(\${rotY}deg) rotateX(-\${tilt}deg) rotateZ(\${sidewaysTilt}deg)\`,
             }}
           >
             {shots.map((shot, idx) => {
@@ -828,11 +762,11 @@ function RoundCarouselDemo({
 
               return (
                 <div
-                  key={`${shot.src}-${idx}`}
+                  key={\`\${shot.src}-\${idx}\`}
                   className="absolute inset-0 cursor-pointer"
                   style={{
                     transformStyle: "preserve-3d",
-                    transform: `rotateY(${cylinderAngle}deg) translateZ(${cylinderRadius}px)`,
+                    transform: \`rotateY(\${cylinderAngle}deg) translateZ(\${cylinderRadius}px)\`,
                     opacity: inactiveOpacity,
                   }}
                   onClick={(e) => toggleFlip(idx, e)}
@@ -843,7 +777,7 @@ function RoundCarouselDemo({
                     className="relative h-full w-full border border-white/30 bg-slate-950 p-1 shadow-2xl"
                     style={{
                       transformStyle: "preserve-3d",
-                      borderRadius: `${borderRadius}px`,
+                      borderRadius: \`\${borderRadius}px\`,
                     }}
                   >
                     {/* Front Side */}
@@ -851,13 +785,13 @@ function RoundCarouselDemo({
                       className="absolute inset-0 flex flex-col overflow-hidden bg-slate-950 p-1"
                       style={{
                         backfaceVisibility: "hidden",
-                        borderRadius: `${borderRadius}px`,
+                        borderRadius: \`\${borderRadius}px\`,
                       }}
                     >
                       <img
                         src={shot.src}
                         alt={shot.alt}
-                        style={{ borderRadius: `${Math.max(2, borderRadius - 3)}px` }}
+                        style={{ borderRadius: \`\${Math.max(2, borderRadius - 3)}px\` }}
                         className="h-full w-full object-cover"
                       />
                       {showTitle && (
@@ -876,7 +810,7 @@ function RoundCarouselDemo({
                       style={{
                         backfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
-                        borderRadius: `${borderRadius}px`,
+                        borderRadius: \`\${borderRadius}px\`,
                       }}
                     >
                       <div className="flex items-center justify-between border-b border-purple-500/30 pb-1">
@@ -905,77 +839,48 @@ function RoundCarouselDemo({
           </div>
         </div>
       </div>
-    </Center>
+    </div>
   );
 }
 
+export default ${compName}Gallery;
+`;
+};
 
+GALLERY_CODEGENS["box-carousel"] = (opts, item) => {
+  const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
+  
+  return `// ${item.name} — TasteLoop Gallery Component
+// Pattern: ${item.name}
 
-/* ─────────────────────────────────────────────────────────────────────────────
- * 5. BOX CAROUSEL
- * 3D rotating horizontal image carousel.
- * ────────────────────────────────────────────────────────────────────────────*/
+"use client";
 
-export function BoxCarouselFace({
-  shot,
-  idx,
-  totalShots,
-  anglePerFace,
-  carouselRadius,
-  inactiveOpacity,
-  rotationY,
-  cardW,
-  cardH,
-  borderRadius,
-  showTitle,
-  originalIndex,
-}: any) {
-  const angle = idx * anglePerFace;
-  const opacity = useTransform(rotationY, (y: number) => {
-    let currentFloatIndex = -y / anglePerFace;
-    currentFloatIndex = ((currentFloatIndex % totalShots) + totalShots) % totalShots;
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, animate, useTransform, useReducedMotion } from "framer-motion";
+import { X, Sparkles, RotateCw, Layers } from "lucide-react";
 
-    let distance = Math.abs(idx - currentFloatIndex);
-    if (distance > totalShots / 2) {
-      distance = totalShots - distance;
-    }
+${GALLERY_HELPERS}
 
-    return distance <= 1.5 ? inactiveOpacity : 0;
-  });
+export function ${compName}Gallery({
+  slides = [
+      { src: "https://images.unsplash.com/photo-1644371972225-4917efaa3958?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "React Spatial 3D — Code engine" },
+      { src: "https://images.unsplash.com/photo-1752604247379-f7df3beb25b6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Neon Nightscape — Midnight aesthetic" },
+      { src: "https://images.unsplash.com/photo-1667644813320-0c6bf26a015d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Prismatic Array — Energy spectrum" },
+      { src: "https://plus.unsplash.com/premium_photo-1663036504811-01f157485b20?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Fluid Motion — Acrylic dynamics" },
+      { src: "https://images.unsplash.com/photo-1642663034122-3a37f88cc8cf?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Luminous Studio — Neon lineart" },
+      { src: "https://images.unsplash.com/photo-1690217504455-31a4377de8f2?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Spatial Architecture — Minimalist lighting" },
+    ],
+  options = ${JSON.stringify(opts, null, 2).replace(/\n/g, '\n  ')}
+}: {
+  slides?: GallerySlide[];
+  options?: any;
+}) {
+  const app = { icon: "", name: "Demo App", screenshots: slides };
 
-  return (
-    <motion.div
-      className="absolute inset-0 overflow-hidden bg-slate-950 transition-opacity"
-      style={{
-        transform: `rotateY(${angle}deg) translateZ(${carouselRadius}px)`,
-        opacity,
-        backfaceVisibility: "hidden",
-      }}
-    >
-      <img
-        src={shot.src}
-        alt={shot.alt}
-        style={{
-          width: cardW,
-          height: cardH,
-          borderRadius: `${Math.max(0, borderRadius - 2)}px`,
-        }}
-        className="pointer-events-none object-cover"
-      />
-      {showTitle && (
-        <div className="absolute bottom-2 right-2 rounded bg-black/85 px-2 py-1 font-mono text-[10px] font-bold text-white">
-          #{originalIndex + 1}
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-function BoxCarouselDemo({ app, options }: { app: any; options?: any }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const size = useContainerSize(containerRef);
   const isDetail = size.height > 380;
-  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+  const shots = slides;
 
   const reduce = useReducedMotion();
   const rotationY = useMotionValue(0);
@@ -1070,16 +975,16 @@ function BoxCarouselDemo({ app, options }: { app: any; options?: any }) {
 
   if (!shots || shots.length === 0) {
     return (
-      <Center className="h-full w-full">
+      <div className="h-full w-full bg-[#0d0c14] overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 p-4">
         <div className="flex h-full w-full items-center justify-center p-8 text-center text-sm text-purple-200/60">
           No images added. Add images from the panel to build the carousel.
         </div>
-      </Center>
+      </div>
     );
   }
 
   return (
-    <Center className={`h-full w-full ${isDetail ? "p-12" : ""}`}>
+    <Center className={\`h-full w-full \${isDetail ? "p-12" : ""}\`}>
       <div ref={containerRef} className="flex h-full w-full items-center justify-center">
         <div
           className="relative flex items-center justify-center"
@@ -1104,7 +1009,7 @@ function BoxCarouselDemo({ app, options }: { app: any; options?: any }) {
             {renderedShots.map((shot: any, idx: number) => {
               return (
                 <BoxCarouselFace
-                  key={`${shot.src}-${idx}`}
+                  key={\`\${shot.src}-\${idx}\`}
                   shot={shot}
                   idx={idx}
                   totalShots={totalRendered}
@@ -1123,6 +1028,72 @@ function BoxCarouselDemo({ app, options }: { app: any; options?: any }) {
           </motion.div>
         </div>
       </div>
-    </Center>
+    </div>
   );
 }
+
+export default ${compName}Gallery;
+`;
+};
+
+export function getGalleryCode(variant: string, opts: any, item: any): string | null {
+  const mappedVariant = variant === "magnetic-carousel" ? "magnetic" 
+    : variant === "ring-gallery" ? "ring" 
+    : variant === "round-carousel" ? "round"
+    : variant === "orbit" ? "proximity-orbit"
+    : variant === "box" ? "box-carousel"
+    : variant;
+  const gen = GALLERY_CODEGENS[mappedVariant];
+  if (!gen) return null;
+  return gen(opts, item);
+}
+
+const GALLERY_HELPERS = `
+export interface GallerySlide {
+  src: string;
+  alt: string;
+}
+
+/** Hook to measure container dimensions for responsive scaling between Card view & Detail view */
+function useContainerSize(ref: React.RefObject<HTMLDivElement | null>) {
+  const [size, setSize] = React.useState({ width: 300, height: 260 });
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
+        }
+      }
+    });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref]);
+  return size;
+}
+
+/** Helper to scale fixed size components relative to container size */
+function getResponsiveScale(size: { width: number; height: number }, isDetail: boolean) {
+  if (!isDetail) {
+    return Math.max(0.5, Math.min(1.2, size.width / 300));
+  }
+  const minDim = Math.min(size.width, size.height);
+  return Math.max(0.8, Math.min(2.5, minDim / 450));
+}
+
+/** Helper to convert options into Framer Motion transition configurations */
+function getMotionTransition(transitionType?: string, durationVal?: number, easingVal?: string) {
+  const duration = Math.max(0.05, durationVal ?? 0.8);
+  const ease = easingVal === "linear" ? "linear"
+    : easingVal === "ease-in-out" ? [0.42, 0, 0.58, 1]
+    : easingVal === "spring" ? undefined
+    : [0.22, 1, 0.36, 1];
+  if (transitionType === "Spring" || easingVal === "spring") {
+    return { type: "spring", stiffness: Math.max(80, 360 / duration), damping: 24 };
+  }
+  if (transitionType === "Linear Inertia" || easingVal === "linear") {
+    return { duration, ease: "linear" };
+  }
+  return { duration, ease: ease ?? [0.22, 1, 0.36, 1] };
+}
+`;

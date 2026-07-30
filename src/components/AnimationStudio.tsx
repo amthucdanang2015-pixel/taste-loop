@@ -29,6 +29,7 @@ import { AnimDemo } from "@/components/anim";
 import { Stage } from "@/components/anim/Stage";
 import { ANIMATION_TYPES } from "@/content";
 import { getMotionCode } from "@/components/anim/motionCodegens";
+import { getGalleryCode } from "@/components/anim/galleryCodegens";
 
 
 // ─── Entrances color ──────────────────────────────────────────────────────────
@@ -1955,6 +1956,12 @@ function generateComponentCode(
 
   if (type === "gallery" && data.item) {
     const item = data.item;
+    const galleryCode = getGalleryCode(item.variant, data.galleryOptions || {}, item);
+    
+    if (galleryCode) {
+      return galleryCode;
+    }
+
     const compName = item.name.replace(/[^a-zA-Z0-9]/g, "");
 
     return `// ${item.name} — TasteLoop Gallery Component
