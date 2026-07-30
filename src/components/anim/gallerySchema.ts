@@ -17,6 +17,8 @@ export interface GalleryOptions {
   transition: string;
   duration: number;
   easing: string;
+  direction?: "Left" | "Right";
+  animationMode?: "Auto" | "Drag";
 }
 
 export interface DisabledInfo {
@@ -99,6 +101,30 @@ export const DEFAULT_GALLERY_OPTIONS: Record<string, GalleryOptions> = {
     duration: 0.6,
     easing: "ease-in-out",
   },
+  "box-carousel": {
+    slides: [
+      { src: "https://images.unsplash.com/photo-1577774438656-768f1e5d9ed6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Live Telemetry" },
+      { src: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80", alt: "Vision Spatial UI" },
+      { src: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", alt: "Chroma Builder" },
+      { src: "https://images.unsplash.com/photo-1644371972225-4917efaa3958?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "React Spatial 3D" },
+      { src: "https://images.unsplash.com/photo-1752604247379-f7df3beb25b6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Neon Nightscape" },
+      { src: "https://images.unsplash.com/photo-1667644813320-0c6bf26a015d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Prismatic Array" }
+    ],
+    autoplay: true,
+    showTitle: false,
+    cardWidth: 500,
+    cardHeight: 300,
+    borderRadius: 12,
+    gap: 16,
+    tilt: 0,
+    sidewaysTilt: 0,
+    inactiveOpacity: 100,
+    transition: "Spring",
+    duration: 0.8,
+    easing: "ease-out",
+    direction: "Right",
+    animationMode: "Auto",
+  },
 };
 
 export const BASE_DEFAULT_GALLERY_OPTIONS: GalleryOptions = {
@@ -115,6 +141,8 @@ export const BASE_DEFAULT_GALLERY_OPTIONS: GalleryOptions = {
   transition: "Tween",
   duration: 0.8,
   easing: "ease-out",
+  direction: "Right",
+  animationMode: "Auto",
 };
 
 export const GALLERY_SCHEMA_CONTROLS: ControlDef[] = [
@@ -148,7 +176,7 @@ export const GALLERY_SCHEMA_CONTROLS: ControlDef[] = [
     type: "slider",
     group: "layout",
     min: 30,
-    max: 300,
+    max: 800,
     step: 2,
     appliedTo: "Applied to: Gallery card width",
   },
@@ -158,7 +186,7 @@ export const GALLERY_SCHEMA_CONTROLS: ControlDef[] = [
     type: "slider",
     group: "layout",
     min: 40,
-    max: 400,
+    max: 800,
     step: 2,
     appliedTo: "Applied to: Gallery card height",
   },
@@ -216,6 +244,30 @@ export const GALLERY_SCHEMA_CONTROLS: ControlDef[] = [
   },
 
   // Animation Group
+  {
+    key: "direction",
+    label: "Direction",
+    type: "select",
+    group: "animation",
+    options: [
+      { label: "Left", value: "Left" },
+      { label: "Right", value: "Right" },
+    ],
+    supportedVariants: ["box-carousel"],
+    appliedTo: "Applied to: Carousel rotation direction",
+  },
+  {
+    key: "animationMode",
+    label: "Animation",
+    type: "select",
+    group: "animation",
+    options: [
+      { label: "Auto", value: "Auto" },
+      { label: "Drag", value: "Drag" },
+    ],
+    supportedVariants: ["box-carousel"],
+    appliedTo: "Applied to: Auto rotation or manual drag",
+  },
   {
     key: "transition",
     label: "Transition",

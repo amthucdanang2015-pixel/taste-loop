@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, useMotionValue, animate, useTransform } from "framer-motion";
 import { Center } from "./_kit";
 import shippedManifest from "../../../assets/shipped-manifest.json";
 import { assetUrl } from "@/config/assets";
@@ -146,11 +146,13 @@ export function GalleryDemo({
   const isMagnetic = variant === "magnetic" || variant === "magnetic-carousel";
   const isRing = variant === "ring" || variant === "ring-gallery";
   const isRound = variant === "round" || variant === "round-carousel";
+  const isBox = variant === "box" || variant === "box-carousel";
 
   if (isOrbit) return <ProximityOrbitDemo app={VOCABTUNES_APP} options={options} />;
   if (isMagnetic) return <MagneticCarouselDemo app={BUZZED_APP} options={options} />;
   if (isRing) return <RingGalleryDemo app={NOTEFLY_APP} options={options} />;
   if (isRound) return <RoundCarouselDemo app={KING_ENGLISH_APP} options={options} />;
+  if (isBox) return <BoxCarouselDemo app={NOTEFLY_APP} options={options} />;
 
   return <ProximityOrbitDemo app={VOCABTUNES_APP} options={options} />;
 }
@@ -364,7 +366,7 @@ function MagneticCarouselDemo({
     options?.duration,
     options?.easing
   );
-  
+
   const horizontalPadding = isDetail ? size.width * 0.1 : 48;
   const maxCardWidth = isDetail ? Math.max(140, size.width * 0.18) : 140;
 
@@ -901,6 +903,224 @@ function RoundCarouselDemo({
               );
             })}
           </div>
+        </div>
+      </div>
+    </Center>
+  );
+}
+
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 5. BOX CAROUSEL
+ * 3D rotating horizontal image carousel.
+ * ────────────────────────────────────────────────────────────────────────────*/
+
+function BoxCarouselFace({
+  shot,
+  idx,
+  totalShots,
+  anglePerFace,
+  carouselRadius,
+  inactiveOpacity,
+  rotationY,
+  cardW,
+  cardH,
+  borderRadius,
+  showTitle,
+  originalIndex,
+}: any) {
+  const angle = idx * anglePerFace;
+  const opacity = useTransform(rotationY, (y: number) => {
+    let currentFloatIndex = -y / anglePerFace;
+    currentFloatIndex = ((currentFloatIndex % totalShots) + totalShots) % totalShots;
+
+    let distance = Math.abs(idx - currentFloatIndex);
+    if (distance > totalShots / 2) {
+      distance = totalShots - distance;
+    }
+
+    return distance <= 1.5 ? inactiveOpacity : 0;
+  });
+
+  return (
+    <motion.div
+      className="absolute inset-0 overflow-hidden bg-slate-950 transition-opacity"
+      style={{
+        transform: `rotateY(${angle}deg) translateZ(${carouselRadius}px)`,
+        opacity,
+        backfaceVisibility: "hidden",
+      }}
+    >
+      <img
+        src={shot.src}
+        alt={shot.alt}
+        style={{
+          width: cardW,
+          height: cardH,
+          borderRadius: `${Math.max(0, borderRadius - 2)}px`,
+        }}
+        className="pointer-events-none object-cover"
+      />
+      {showTitle && (
+        <div className="absolute bottom-2 right-2 rounded bg-black/85 px-2 py-1 font-mono text-[10px] font-bold text-white">
+          #{originalIndex + 1}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function BoxCarouselDemo({ app, options }: { app: any; options?: any }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const size = useContainerSize(containerRef);
+  const isDetail = size.height > 380;
+  const shots = options?.slides && options.slides.length > 0 ? options.slides : app.screenshots;
+
+  const reduce = useReducedMotion();
+  const rotationY = useMotionValue(0);
+
+  const duration = options?.duration ?? 2.5;
+  const direction = options?.direction ?? "left";
+  const dirFactor = direction === "left" ? -1 : 1;
+  const inactiveOpacity = options?.inactiveOpacity ?? 1;
+
+  const isAuto = options?.animationMode !== "Drag";
+  const scale = getResponsiveScale(size, isDetail);
+  const cardW = (options?.cardWidth ?? (isDetail ? 500 : 250)) * scale;
+  const cardH = (options?.cardHeight ?? (isDetail ? 300 : 150)) * scale;
+  const showTitle = options?.showTitle ?? true;
+  const borderRadius = options?.borderRadius ?? 12;
+
+  // 90-degree block rotation / flip effect
+  const anglePerFace = 90;
+  const carouselRadius = cardW / 2;
+
+  // Duplicate shots so it's a multiple of 4 for a perfect cube loop
+  let renderedShots = shots.map((s: any, i: number) => ({ ...s, originalIndex: i }));
+  if (renderedShots.length > 0) {
+    while (renderedShots.length < 4 || renderedShots.length % 4 !== 0) {
+      renderedShots = [...renderedShots, ...shots.map((s: any, i: number) => ({ ...s, originalIndex: i }))];
+    }
+  }
+  const totalRendered = renderedShots.length;
+
+  useEffect(() => {
+    if (reduce || !isAuto) return;
+
+    let isCancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const flipDuration = Math.max(0.5, Math.min(0.8, duration));
+    const holdDuration = 1500; // 1.5s pause
+
+    const playNext = () => {
+      timeoutId = setTimeout(async () => {
+        if (isCancelled) return;
+
+        const currentY = rotationY.get();
+        // Snap to nearest face to avoid drift if transitioning from drag
+        const snappedY = Math.round(currentY / anglePerFace) * anglePerFace;
+        const targetY = snappedY + (anglePerFace * dirFactor);
+
+        const controls = animate(rotationY, targetY, {
+          duration: flipDuration,
+          ease: "easeInOut",
+        });
+
+        await controls;
+        if (!isCancelled) {
+          playNext();
+        }
+      }, holdDuration);
+    };
+
+    playNext();
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [reduce, isAuto, duration, dirFactor, rotationY, anglePerFace]);
+
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipe = Math.abs(offset.x) * velocity.x;
+    const currentY = rotationY.get();
+
+    if (swipe < -100) {
+      animate(rotationY, Math.round(currentY / anglePerFace) * anglePerFace - anglePerFace, {
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+      });
+    } else if (swipe > 100) {
+      animate(rotationY, Math.round(currentY / anglePerFace) * anglePerFace + anglePerFace, {
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+      });
+    } else {
+      animate(rotationY, Math.round(currentY / anglePerFace) * anglePerFace, {
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+      });
+    }
+  };
+
+  if (!shots || shots.length === 0) {
+    return (
+      <Center className="h-full w-full">
+        <div className="flex h-full w-full items-center justify-center p-8 text-center text-sm text-purple-200/60">
+          No images added. Add images from the panel to build the carousel.
+        </div>
+      </Center>
+    );
+  }
+
+  return (
+    <Center className={`h-full w-full ${isDetail ? "p-12" : ""}`}>
+      <div ref={containerRef} className="flex h-full w-full items-center justify-center">
+        <div
+          className="relative flex items-center justify-center"
+          style={{ perspective: "1500px", transformStyle: "preserve-3d" }}
+        >
+          <motion.div
+            className="relative"
+            style={{
+              width: cardW,
+              height: cardH,
+              transformStyle: "preserve-3d",
+              rotateY: rotationY,
+            }}
+            drag={isAuto ? false : "x"}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            onPointerDown={(e) => {
+              if (isAuto) e.preventDefault();
+            }}
+          >
+            {renderedShots.map((shot: any, idx: number) => {
+              return (
+                <BoxCarouselFace
+                  key={`${shot.src}-${idx}`}
+                  shot={shot}
+                  idx={idx}
+                  totalShots={totalRendered}
+                  anglePerFace={anglePerFace}
+                  carouselRadius={carouselRadius}
+                  inactiveOpacity={inactiveOpacity}
+                  rotationY={rotationY}
+                  cardW={cardW}
+                  cardH={cardH}
+                  borderRadius={borderRadius}
+                  showTitle={showTitle}
+                  originalIndex={shot.originalIndex}
+                />
+              );
+            })}
+          </motion.div>
         </div>
       </div>
     </Center>
