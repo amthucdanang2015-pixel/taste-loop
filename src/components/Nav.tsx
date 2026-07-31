@@ -53,6 +53,7 @@ function NavContent() {
     backdrop-blur-xl
     transition
     hover:border-loop/40
+    ml-12
   "
         >
           <Wordmark className="block h-3 w-auto" />
